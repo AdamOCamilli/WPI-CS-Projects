@@ -33,7 +33,7 @@ int main (int argc, char *argv[]) {
   page pg3 = {.start = 32, .offset = 47, .frame = 2};
   page pg4 = {.start = 48, .offset = 63, .frame = 3};
 
-  free_list = malloc(sizeof(free_list));
+  free_list = malloc(sizeof(page*)*4);
   
   free_list[0] = &pg1;
   free_list[1] = &pg2;
@@ -52,7 +52,7 @@ int main (int argc, char *argv[]) {
     char *tok;
     char *buf_chunks[4];
     int i = 0;
-    for (tok = strtok(buf," ,"); tok != NULL; tok = strtok(NULL," ,")) {
+    for (tok = strtok(buf,", "); tok != NULL; tok = strtok(NULL," ,")) {
       buf_chunks[i] = tok;
       i++;
     } if (i != 4) { // If not exactly 4 args are passed in
@@ -90,15 +90,23 @@ int map(instruction instruc) {
   }
 
   // Try to locate two empty pages: If they cannot be found, we don't have enough to map
-  int i, j, pg_process = -1, pg_pgtable = -1;
+  int i;
+  int j = 0;
+  int pg_process = -1;
+  int pg_pgtable = -1;
+  
   for (i = 0; i < 4; i++) {
-    if ((free_list[i] != NULL)) {
+    //printf("freelist: %i", free_list[i]->start);
+    if (free_list[i] != NULL) {
+      j++;
+      //printf("j: %i", j);
       if (pg_pgtable < 0) 
 	pg_pgtable = i;
       else if (pg_process < 0 && i != pg_pgtable) 
 	pg_process = i; 
     }
-  } if (j < 2) {
+  }
+  if (j < 2) {
     printf("Not enough pages left!\n");
     return 1;
   }
@@ -115,7 +123,7 @@ int map(instruction instruc) {
     memory[i] = page_table[i];
   }
   free_list[pg_pgtable] = NULL; // Mark page as used
-  free_list[pg_process] = NULL; // Marg page as used
+  free_list[pg_process] = NULL; // Mark page as used
 
   return 0;
 }
