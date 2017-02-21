@@ -25,6 +25,7 @@ char page_table[SIZE / PAGE_LIMIT];
 int used_pids[PAGE_LIMIT] = {-1,-1,-1,-1};
 
 int map(instruction instruc);
+int store(instruction instruc);
 
 int main (int argc, char *argv[]) {
 
@@ -75,7 +76,7 @@ int main (int argc, char *argv[]) {
     if (!strcmp(instruc.type, "map")) {
       map(instruc);
     } else if (!strcmp(instruc.type, "store")) {
-      printf("Not yet implemented\n");
+      store(instruc);
     } else if (!strcmp(instruc.type, "load")) {
       printf("Not yet implemented\n");
     } else {
@@ -145,6 +146,31 @@ int map(instruction instruc) {
   return 0;
 }
 
-
-
+int store(instruction instruc){
+  int p_add = 0;
+  int frame = 0;
+  for(int i = 0; i < 4; i++){
+    if (instruc.pid == used_pids[i]){
+      frame = i;
+    }
+  }
+  if(frame == 0){
+    printf("Hasn't been mapped yet.\n");
+  }
   
+  if(frame == 1){
+    p_add = instruc.v_addr + 16;
+  }
+  else if(frame == 2){
+    p_add = instruc.v_addr + 32;
+  }
+  else if(frame == 3){
+    p_add = instruc.v_addr + 48;
+  }
+
+  printf("Stored value %d at virtual address %d (physical address %d)\n", instruc.value, instruc.v_addr, p_add);
+
+	 return 0;
+}
+
+
