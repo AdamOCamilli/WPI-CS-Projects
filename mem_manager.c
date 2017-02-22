@@ -4,6 +4,7 @@
 
 #define SIZE 64
 #define PAGE_LIMIT 4
+#define MAX_PROCESSES 2
 #define SEED 4
 
 typedef struct page {
@@ -16,16 +17,17 @@ typedef struct instruction {
   int pid;              // [0-3]
   char *type;           // map, store, load
   unsigned int v_addr;  // [0-63]
-  int value;            // int from [0-63]
+  int value;            // int from [0-255]
 } instruction;
 
 char memory[SIZE];
 page **free_list;
 char page_table[SIZE / PAGE_LIMIT];
-int used_pids[PAGE_LIMIT] = {-1,-1,-1,-1};
+int used_pids[MAX_PROCESSES];
 
 int map(instruction instruc);
 int store(instruction instruc);
+int load(instruction instruc);
 
 int main (int argc, char *argv[]) {
 
@@ -38,13 +40,14 @@ int main (int argc, char *argv[]) {
 
   free_list = malloc(sizeof(page*)*4);
   
-  free_list[0] = &pg1; // Reserved for page table
+  free_list[0] = &pg1;
   free_list[1] = &pg2;
   free_list[2] = &pg3;
   free_list[3] = &pg4;
 
-  instruction page_table_map = {.pid = 0, .type="map", .v_addr = 0, .value = 1};
-  map(page_table_map);
+  int k;
+  for (k = 0; k < MAX_PROCESSES; k++)
+    used_pids[k] = -1;
   
   // Instruction buffer 
   char buf[100];
@@ -62,11 +65,11 @@ int main (int argc, char *argv[]) {
       buf_chunks[i] = tok;
       i++;
     } if (i != 4) { // If not exactly 4 args are passed in
-      printf("Please enter exactly 4 arguments for instruction. %d\n",i);
+      printf("Please enter exactly 4 arguments for instruction. You entered %d\n",i);
       exit(1);
     }
 
-    
+    // Populate struct with converted instruction tokens
     instruction instruc;
     instruc.pid = (int) strtol(buf_chunks[0], (char **)NULL, 10);
     instruc.type = buf_chunks[1];
@@ -89,59 +92,78 @@ int main (int argc, char *argv[]) {
 }
 
 int map(instruction instruc) {
+  int no_page_table = 0; // If this is first memory allocation for this process and it needs two pages
+  
   // Check if value field is correct for mapping (0 for read or 1 for write)
   if (instruc.value > 1 || instruc.value < 0) {
-    printf("Needs a value of 0 or 1.\n");
+    printf("Value bit must be 0 or 1.\n");
     return 1;
   }
 
-  // Check if pid is already in use
-  int i = 0;
-  for (; i < PAGE_LIMIT; i++) {
-    if (instruc.pid == used_pids[i]) {
-      printf("PID %d is already in use!\n",instruc.pid);
+  // Check if process already has memory allocated (and therefore has a page table already)
+  int i = 0, j = 0;
+  int temp;
+  for (; i < MAX_PROCESSES; i++) 
+    if (instruc.pid == used_pids[i]) 
+      no_page_table++;
+  
+  int pg_process = -1;
+  int pg_pgtable = -1;
+  // If page table is already allocated, only one free page is needed
+  if (no_page_table) {
+    for (i = 0; i < PAGE_LIMIT; i++) {
+      if (free_list[i] != NULL) 
+	if (pg_process < 0) 
+	  pg_process = i;
+    } if (pg_process < 0) {
+      printf("Not enough pages left!\n");
       return 1;
     }
-  }
-  
-  // Try to locate two empty pages: If they cannot be found, we don't have enough to map
-  int j = 0;
-  int pg_process = -1;
-  
-  for (i = 0; i < 4; i++) {
-    //printf("freelist: %i", free_list[i]->start);
-    if (free_list[i] != NULL) {
-      j++;
-      //printf("j: %i", j); 
-      pg_process = i;
-      break;
-    }
-  }
-  if (j < 1) {
-    printf("Not enough pages left!\n");
-    return 1;
+  } else { // Else if page table is needed we need to locate two pages on free list
+   for (i = 0; i < PAGE_LIMIT; i++) {
+      //printf("freelist: %i", free_list[i]->start);
+      if (free_list[i] != NULL) { 
+	if (pg_pgtable < 0) 
+	  pg_pgtable = i;
+	else if (pg_process < 0) 
+	  pg_process = i;
+      }
+    } if (pg_process < 0 || pg_pgtable < 0) {
+	printf("Not enough pages left!\n");
+	return 1;
+    } 
   }
 
-  used_pids[i] = instruc.pid; // Add PID to list of PIDS in use
-  
-  int frame = free_list[pg_process]->frame;
-  if (frame == 0)
-    printf("Mapped page table into physical frame %d.\n", frame); // Frame 0 is reserved for page table
-  else 
-    printf("Mapped virtual address %d (page %d) into physical frame %d.\n", instruc.v_addr, pg_process, frame);
+  // Mark PID as used
+  for (i = 0; i < MAX_PROCESSES; i++)
+    if (used_pids[i] < 0)
+      used_pids[i] = instruc.pid;
 
-  // Put information in page table
-  // Usage of frame is accurate for page_table indices because pages are allocated to processes in ascending order (FIFO)
-  if (frame > 0) { // We don't care about info regarding page table itself
-    char info_byte = instruc.pid + frame + instruc.v_addr + instruc.value;
-    page_table[frame-1] = info_byte; 
-    printf("Placed info byte %d into %d on page table\n", info_byte, frame-1);
-    for(i = free_list[frame]->start; i < free_list[frame]->offset; i++) {
-      memory[i] = page_table[i];
-    }
+  // Notify user where we have mapped their PID and its page table  
+  int pgtable_frame;
+  int process_frame;
+  if (pg_pgtable > -1) {
+    pgtable_frame = free_list[pg_pgtable]->frame;
+    printf("Mapped page table into physical frame %d.\n", pgtable_frame);
   }
-  
-  free_list[frame] = NULL; // Mark page as used
+  process_frame = free_list[pg_process]->frame;
+  printf("Mapped virtual address %d (page %d) into physical frame %d.\n", instruc.v_addr, (instruc.v_addr / 16), process_frame);
+
+  // Put information in first free spot on page table
+  if (pg_pgtable > -1) { 
+    char info_byte = instruc.v_addr + process_frame;
+    for (i = free_list[pg_pgtable]->start; i < free_list[pg_pgtable]->offset; i++) {
+      if (!memory[i]) {
+	memory[i] = info_byte;
+	break;
+      }
+    }
+    printf("Placed info byte %d into %d on page table\n", info_byte, pgtable_frame);
+  }
+
+  if (pg_pgtable > -1)
+    free_list[pg_pgtable] = NULL; // Mark page as used
+  free_list[pg_process] = NULL; // Mark page as used
 
   return 0;
 }
@@ -155,10 +177,10 @@ int store(instruction instruc){
     }
   }
   if(frame == 0){
-    printf("Hasn't been mapped yet.\n");
+    printf("No more space!\n");
   }
   
-  if(frame == 1){
+  if(frame == 1) {
     p_add = instruc.v_addr + 16;
   }
   else if(frame == 2){
@@ -170,7 +192,27 @@ int store(instruction instruc){
 
   printf("Stored value %d at virtual address %d (physical address %d)\n", instruc.value, instruc.v_addr, p_add);
 
-	 return 0;
+  return 0;
 }
+/*
+int load(instruction instruc){
+  int value;
+  int i,j;
 
-
+  if (instruc.value != 0){
+    prinf("The value field has to be zero!\n");
+    return 1;
+  }
+  for(i = 0; i < 4; i++){
+    if (instruc.pid == used_pids[i]){
+      for(j = free_list[; j; j++){
+	if (memory[j] == used_v_addr[j]){
+	  value = instruc.v_addr;
+	  printf("Load value %d at virtual address %d (physical address __)\n", value, instruc.v_addr);
+	  return 0;
+	}
+      }
+    }
+  }
+}
+*/
