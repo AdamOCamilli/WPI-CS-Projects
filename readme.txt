@@ -3,20 +3,12 @@ Sydney Fisher
 
 Part 1:
      Page table implementation:
-     	     To implement the page table within memory, we used a struct called entry that represents pertinent info to a page table entry, such as the PID of the process it belongs to,
-	     a virtual page number and the physical frame it translate to, the read/write value, etc. A global array of these structs is used to store them, and in memory, within the page
-	     belonging to a page table are the indices of the global array its entries are located in.
-	     So for example, there might be some entry the array
+     	  Our page tables (one for each process) are each located within their designated page in memory. The indices of memory representing the starts of their pages are stored as
+	  integers in a global array named registers, as the stored indices are meant to simulate hardware registers. In memory itself they follow a pattern:
 
-	     entries[0] = {.used = 1,
-	     	      	   .io = 0,
-			   .rw = 1,
-	     	      	   .vpn = 0,
-			   .pfn = 1,
-			   .pid = 0
-			  }
+	  Index of Memory:  [0/16/32/48] [+1] [+2] [+3] ... (Same pattern four times) ... [15/31/47/63] (End of page)
+ 	  Content:              PID      VPN  PFN  R/W  ...          ...                       R/W
 
-	     whose fields rw, vpn, pfn, and pid represent respectively the read/write value 1, the virtual page number 0, the physical frame 1 the vpn corresponds to, and the process id 0.
-	     The index 0 that locates this entry within the global array is stored in memory in physical frame 0, where process 0's page table is located.
-	     If another entry were created at entries[1] representing another page that was mapped to process 0, 1 would be stored after 0 in memory. 
-			 
+	  That is, the start of the page (which will be a multiple of 16 since memory is 64 chars divided into 4 pages) holds the ID of the process whose maps it contains info about;
+	  The first index afterwards (Could be 1,17,etc.) holds the virtual page number of the page mapped, the second index holds physical frame number of the page in memory that was
+	  actually mapped to the process, and the third index holds the read/write value of the map. This pattern continues throughout the page in memory held 

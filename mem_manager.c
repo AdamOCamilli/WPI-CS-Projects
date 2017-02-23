@@ -4,18 +4,8 @@
 
 #define SIZE 64
 #define PAGE_LIMIT 4
-#define MAX_PROCESSES 2
+#define MAX_PROCESSES 4
 #define SEED 4
-
-// Byte-wide struct for page table entry
-typedef struct entry {
-  u_int8_t used:1;   // In use bit
-  u_int8_t io:1;    // Memory/Disk bit
-  u_int8_t rw:1;    // Read/Write bit
-  u_int8_t vpn:2;   // Virtual process number
-  u_int8_t pfn:2;   // Physical frame number
-  u_int8_t pid:2;   // PID
-} entry;
 
 typedef struct page {
   int start; 
@@ -28,12 +18,12 @@ typedef struct instruction {
   int pid;              // [0-3]
   char *type;           // map, store, and load
   unsigned int v_addr;  // [0-63]
-  int value;            // [0-255]
+  unsigned int value;            // [0-255]
 } instruction;
 
 char memory[SIZE];
 page **free_list;
-entry registers[PAGE_LIMIT];
+int registers[MAX_PROCESSES];
 
 int map(instruction instruc);
 int store(instruction instruc);
@@ -49,15 +39,18 @@ int main (int argc, char *argv[]) {
   page pg3 = {.start = 32, .offset = 47, .frame = 2, .used = 0};
   page pg4 = {.start = 48, .offset = 63, .frame = 3, .used = 0};
 
-  // Place them on a free list
+  // Place them on free list
   free_list = malloc(sizeof(page*) * 4);
   free_list[0] = &pg1;
   free_list[1] = &pg2;
   free_list[2] = &pg3;
   free_list[3] = &pg4;
 
-  for (int i = 0; i < PAGE_LIMIT; i++)
-    registers[i].used= 0;
+  // Mark registers and memory as unused
+  for (int i = 0; i < MAX_PROCESSES; i++)
+    registers[i] = -1; 
+  for (int i = 0; i < SIZE; i++)
+    memory[i] = -1; 
   
   // Instruction buffer 
   char buf[100];
@@ -81,20 +74,17 @@ int main (int argc, char *argv[]) {
 
     // Populate struct with converted tokens
     instruction instruc;
-    unsigned int vaddr = (unsigned int) strtol(buf_chunks[2], (char **)NULL, 10);
-    vaddr = (vaddr / 16) * 16; // Converts, for example, 21 to 16, 35 to 32, etc.
-    
     instruc.pid = (int) strtol(buf_chunks[0], (char **)NULL, 10);
     instruc.type = buf_chunks[1];
-    instruc.v_addr = vaddr;
-    instruc.value = (int) strtol(buf_chunks[3], (char **)NULL, 10);
+    instruc.v_addr = (unsigned int) strtol(buf_chunks[2], (char **)NULL, 10);
+    instruc.value = (unsigned int) strtol(buf_chunks[3], (char **)NULL, 10);
 
     if (!strcmp(instruc.type, "map")) {
       map(instruc);
     } else if (!strcmp(instruc.type, "store")) {
       store(instruc);
     } else if (!strcmp(instruc.type, "load")) {
-      printf("Not yet implemented\n");
+      load(instruc);
     } else {
       printf("\"%s\" is not a valid instruction.\n",instruc.type);
     }
@@ -105,153 +95,163 @@ int main (int argc, char *argv[]) {
 }
 
 int map(instruction instruc) {
-  int i = 0, j = 0;
-  int no_page_table = 0; // Whether this is the first memory allocation for this process and it needs an
-                         // additional page for page table
-
-  // Check if PID already has page(s) mapped to it
-  for (i = 0; i < PAGE_LIMIT; i++)
-    if (registers[i].used && registers[i].pid == instruc.pid) {
-      if (registers[i].vpn == instruc.v_addr + 1) {
-	printf("Virtual address %d has already been allocated for process %d\n",instruc.v_addr,instruc.pid);
-	return 1;
-      }
-      no_page_table++;
-    }
   
   // Check if value field is correct for mapping (0 for read or 1 for write)
   if (instruc.value > 1 || instruc.value < 0) {
-    printf("Value bit must be 0 or 1.\n");
+    printf("Value bit must be 0 or 1 for mapping.\n");
     return 1;
-  }  
+  }
+
+  // Check if virtual address has already been mapped for this process
+  if (registers[instruc.pid] > -1) {
+    for (int i = registers[instruc.pid] + 1; i < registers[instruc.pid] + 13; i += 4) {
+      if (memory[i] == instruc.v_addr / 16) {
+	printf("Virtual address %d has already been mapped to physical frame %d for process %d\n", instruc.v_addr, memory[i+1], instruc.pid);
+	return 1;
+      }
+    }
+  }
+
+  // Convert virtual address to appropriate multiple of 16
+  instruc.v_addr = (instruc.v_addr / 16) * 16;
+  // Check if process already has a page table
+  int no_page_table = 0; 
+  if (registers[instruc.pid] >= 0)
+    no_page_table = 1;
   
-  int process_vpn = -1; // Virtual page number for this process's page
-  int pgtable_vpn = -1; // Virtual page number for process's page table
-  // If page table is already allocated, only one free page is needed
+  
+  int pgtable_pfn = -1; // Physical frame number for page mapped to page table if it doesn't already exist 
+  int process_vpn = -1; // Virtual page number for page mapped to this process
+  int process_pfn = -1;
+  // If page table is already allocated, only one page is needed from free list
   if (no_page_table) {
-    for (i = 0; i < PAGE_LIMIT; i++) {
+    for (int i = 0; i < PAGE_LIMIT; i++) {
       if (!free_list[i]->used) 
-	if (process_vpn < 0) 
-	  process_vpn = (instruc.v_addr / 16) + 1; // +1 because VPN 0 belongs to page table
+	if (process_vpn < 0) {
+	  process_pfn = i;
+	  process_vpn = instruc.v_addr / 16;
+	}
     } if (process_vpn < 0) {
       printf("Not enough pages left!\n");
       return 1;
     }
-  } else { // Else if page table is needed we need to locate two pages on free list
-   for (i = 0; i < PAGE_LIMIT; i++) {
+  } else { // Else if page table is needed, we need to locate two pages on free list
+   for (int i = 0; i < PAGE_LIMIT; i++) {
       //printf("freelist: %i", free_list[i]->start);
       if (!free_list[i]->used) { 
-	if (pgtable_vpn < 0) 
-	  pgtable_vpn = (instruc.v_addr / 16);
-	else if (process_vpn < 0) 
-	  process_vpn = (instruc.v_addr / 16) + 1;
-      }
-    } if (process_vpn < 0 || pgtable_vpn < 0) {
-	printf("Not enough pages left!\n");
-	return 1;
-    } 
-  }
-
-  // Notify user where we will map their PID and its page table  
-  int process_pfn; // Physical frame number of page being mapped to process
-  int pgtable_pfn; // Physical frame number of page being mapped to page table
-  if (pgtable_vpn > -1) {
-    pgtable_pfn = free_list[pgtable_vpn]->frame;
-    printf("Mapped page table into physical frame %d.\n", pgtable_pfn);
-  }
-  process_pfn = free_list[process_vpn]->frame;
-  printf("Mapped virtual address %d (page %d) into physical frame %d.\n", instruc.v_addr, (instruc.v_addr / 16), process_pfn);
-
-  // Place page table entries in register, and the register index into memory
-  if (!no_page_table) {
-    // Create page table entry 
-    entry our_entry = {.used = 1, .io = 0, .rw = instruc.value, .vpn = process_vpn, .pfn = process_pfn, .pid = instruc.pid};
-    // Find empty register for our entry
-    for (i = 0; i < PAGE_LIMIT; i++) 
-      if (!registers[i].used) {
-	registers[i] = our_entry;
-	break;
-      }
-
-    // Place index in registers of our entry into memory 
-    memory[free_list[pgtable_vpn]->start] = i;
-  } else { // else we must find page table of this process
-    // Create our page table entry
-    entry our_entry = {.used = 1, .io = 0, .rw = instruc.value, .vpn = process_vpn, .pfn = process_pfn, .pid = instruc.pid};
-    // Find empty register for our entry
-    for (i = 0; i < PAGE_LIMIT; i++) 
-      if (registers[i].pid == -1) {
-	registers[i] = our_entry;
-	break;
-      }
-    // Find where in memory what page our page table is located in
-    int check;
-    for (int k = 0; k < PAGE_LIMIT; k++) {
-      check = memory[16*k];
-      if (!registers[check].used)
-	if (our_entry.vpn != registers[check].vpn && registers[check].pid == instruc.pid) 
-	  break;
-    }
-
-    for (; check < SIZE; check++) 
-      if (memory[check] == 0) {
-	memory[check] = j; // index of our entry in registers
-	break;
-      }
-  }
-
-  if (pgtable_vpn > -1)
-    free_list[pgtable_vpn]->used = 1; // Mark page as used
-  free_list[process_vpn]->used = 1; // Mark page as used
-
-  return 0;
-}
-
-int store(instruction instruc){
-  int p_add = 0;
-  int frame = 0;
-  for(int i = 0; i < PAGE_LIMIT; i++){
-    if (instruc.pid == registers[i].pid){
-      frame = i;
-    }
-  }
-  if(frame == 0){
-    printf("No more space!\n");
-  }
-  
-  if(frame == 1) {
-    p_add = instruc.v_addr + 16;
-  }
-  else if(frame == 2){
-    p_add = instruc.v_addr + 32;
-  }
-  else if(frame == 3){
-    p_add = instruc.v_addr + 48;
-  }
-
-  printf("Stored value %d at virtual address %d (physical address %d)\n", instruc.value, instruc.v_addr, p_add);
-
-  return 0;
-}
-/*
-int load(instruction instruc){
-  int value;
-  int i,j;
-
-  if (instruc.value != 0){
-    prinf("The value field has to be zero!\n");
-    return 1;
-  }
-  for(i = 0; i < 4; i++){
-    if (instruc.pid == used_pids[i]){
-      for(j = free_list[; j; j++){
-	if (memory[j] == used_v_addr[j]){
-	  value = instruc.v_addr;
-	  printf("Load value %d at virtual address %d (physical address __)\n", value, instruc.v_addr);
-	  return 0;
+	if (pgtable_pfn < 0) 
+	  pgtable_pfn = i;
+	else if (process_vpn < 0)  {
+	  process_pfn = i;
+	  process_vpn = instruc.v_addr / 16;
 	}
       }
-    }
+   } if (process_pfn < 0 || pgtable_pfn < 0 || process_vpn < 0) {
+	printf("Not enough pages left!\n");
+	return 1;
+   }
   }
+
+  // Place page table entries in newly created page table, and place index in memory where page table starts
+  // into the index of register array corresponding to our PID
+  if (!no_page_table) {
+    int pgtable_start = free_list[pgtable_pfn]->start;
+    registers[instruc.pid] = pgtable_start;
+
+    // Store map info in page table
+    memory[pgtable_start] = instruc.pid;       // Our PID
+    memory[pgtable_start + 1] = process_vpn;   // Our VPN
+    memory[pgtable_start + 2] = process_pfn;   // PFN corresponding to VPN
+    memory[pgtable_start + 3] = instruc.value; // Read/write
+    
+    printf("Put page table for PID %d into physical frame %d\n", instruc.pid, pgtable_pfn);
+    printf("Mapped virtual address %d (page %d) to physical frame %d\n", instruc.v_addr, process_vpn, process_pfn);
+  } else { // else we must find page table of this process
+    // Locate start of our page table
+    int pgtable_start = registers[instruc.pid];
+    
+    // Find empty index in memory
+    int free_index;
+    for (int i = pgtable_start; i < pgtable_start + 12; i += 4) 
+      if (memory[i] = -1) {
+	  free_index = i;
+	  break;
+      }
+
+    // Store map info in page table
+    memory[free_index] = instruc.pid;       // Our PID
+    memory[free_index + 1] = process_vpn;   // Our VPN
+    memory[free_index + 2] = process_pfn;   // PFN corresponding to VPN
+    memory[free_index + 3] = instruc.value; // Read/write 
+
+    printf("Mapped virtual address %d (page %d) to physical frame %d\n",instruc.v_addr, process_vpn, process_pfn);
+  }
+
+  if (pgtable_pfn > -1)
+    free_list[pgtable_pfn]->used = 1; // Mark page as used
+  free_list[process_pfn]->used = 1; // Mark page as used
+
+  return 0;
 }
-*/
+ 
+int store(instruction instruc) {
+
+  int pgtable_start = registers[instruc.pid];
+  // First check if process has any pages allocated at all
+  if (pgtable_start == -1) {
+    printf("No pages have been mapped to process %d\n", instruc.pid);
+    return 1;
+  }
+
+  // Now check if value is too big or negative
+  if (instruc.value < 0 || instruc.value > 127) {
+    printf("Value out of range\n");
+    return 1;
+  }
+  
+  int p_addr = -1; // The physical address where we will store the value
+
+  // Determine if address translation is possible with frame(s) currently mapped to process
+  for(int i = pgtable_start; i < pgtable_start + 16; i += 4) {
+    if (memory[i+1] ==  instruc.v_addr / 16) { // if virtual address is part of an existing virtual page
+      p_addr = (16 * memory[i+2]) + (instruc.v_addr % 16); // translate address
+      break;
+    }
+  } if (p_addr < 0) {
+    printf("Virtual address %d is not mapped for process %d\n", instruc.v_addr, instruc.pid);
+    return 1;
+  } 
+
+  memory[p_addr] = instruc.value;
+  
+  printf("Stored value %d at virtual address %d (physical address %d)\n", memory[p_addr], instruc.v_addr, p_addr);
+
+  return 0;
+}
+
+int load(instruction instruc){
+  
+  int pgtable_start = registers[instruc.pid];
+  // First check if process has any pages allocated at all
+  if (pgtable_start == -1) {
+    printf("No pages have been mapped to process %d\n", instruc.pid);
+    return -1;
+  }
+  
+  int p_addr = -1; // The physical address where we will store the value
+
+  // Determine if address translation is possible with frame(s) currently mapped to process
+  for(int i = pgtable_start; i < pgtable_start + 16; i += 4) {
+    if (memory[i+1] ==  instruc.v_addr / 16) { // if virtual address is part of an existing virtual page
+      p_addr = (16 * memory[i+2]) + (instruc.v_addr % 16); // translate address
+      break;
+    }
+  } if (p_addr < 0 || memory[p_addr] < 0) {
+    printf("Virtual address %d is not mapped for process %d\n", instruc.v_addr, instruc.pid);
+    return -1;
+  }
+
+  printf("The value %d is virtual address %d (physical address %d)\n", memory[p_addr], instruc.v_addr, p_addr);
+
+  return memory[p_addr];  
+}
