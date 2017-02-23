@@ -8,6 +8,7 @@
 #define SEED 4
 
 typedef struct page {
+  int owner; // PID that has this page mapped to it
   int start; 
   int offset;
   int frame;
@@ -18,26 +19,36 @@ typedef struct instruction {
   int pid;              // [0-3]
   char *type;           // map, store, and load
   unsigned int v_addr;  // [0-63]
-  unsigned int value;            // [0-255]
+  unsigned int value;   // [0-255]
 } instruction;
 
 unsigned char memory[SIZE];
+unsigned char disk[SIZE*SIZE];
+FILE* swap_space;
 page **free_list;
 int registers[MAX_PROCESSES];
+int disk_offsets[MAX_PROCESSES];
+int next_evict;                  // Which page to evict in the event of a swap
 
 int map(instruction instruc);
 int store(instruction instruc);
 int load(instruction instruc);
+/* Writes page contents to disk and resets page in memory */
+page evict(page pg);
+/* Transfer contents of range [offset, offset+16) of swap_space.txt to 
+ * disk if swap_space[offset] = 0 and memory if swap_space[offset] = 1 
+ */
+int swap_page(int offset);
 
 int main (int argc, char *argv[]) {
 
   srand(4);
   
   // Create the physical pages
-  page pg1 = {.start = 0, .offset = 15, .frame = 0, .used = 0};
-  page pg2 = {.start = 16, .offset = 31, .frame = 1, .used = 0};
-  page pg3 = {.start = 32, .offset = 47, .frame = 2, .used = 0};
-  page pg4 = {.start = 48, .offset = 63, .frame = 3, .used = 0};
+  page pg1 = {.owner = -1, .start = 0, .offset = 15, .frame = 0, .used = 0};
+  page pg2 = {.owner = -1, .start = 16, .offset = 31, .frame = 1, .used = 0};
+  page pg3 = {.owner = -1, .start = 32, .offset = 47, .frame = 2, .used = 0};
+  page pg4 = {.owner = -1, .start = 48, .offset = 63, .frame = 3, .used = 0};
 
   // Place them on free list
   free_list = malloc(sizeof(page*) * 4);
@@ -45,12 +56,13 @@ int main (int argc, char *argv[]) {
   free_list[1] = &pg2;
   free_list[2] = &pg3;
   free_list[3] = &pg4;
-
+  
   // Mark registers and memory as unused
   for (int i = 0; i < MAX_PROCESSES; i++)
-    registers[i] = -1; 
-  for (int i = 0; i < SIZE; i++)
-    memory[i] = '\t'; 
+    registers[i] = -1;
+
+  // Open swap file
+  swap_space = fopen("swap_space.txt","w");
   
   // Instruction buffer 
   char buf[100];
@@ -80,7 +92,22 @@ int main (int argc, char *argv[]) {
     instruc.value = (unsigned int) strtol(buf_chunks[3], (char **)NULL, 10);
 
     if (!strcmp(instruc.type, "map")) {
-      map(instruc);
+      if (!map(instruc)) {
+	switch(instruc.pid) {
+	case 0:
+	  pg1.owner = instruc.pid;
+	  break;
+	case 1:
+	  pg2.owner = instruc.pid;
+	  break;
+	case 2:
+	  pg3.owner = instruc.pid;
+	  break;
+	case 3:
+	  pg4.owner = instruc.pid;
+	  break;
+	}
+      }
     } else if (!strcmp(instruc.type, "store")) {
       store(instruc);
     } else if (!strcmp(instruc.type, "load")) {
@@ -90,6 +117,7 @@ int main (int argc, char *argv[]) {
     }
   }
 
+  fclose(swap_space);
   free(free_list);
   return 0;
 }
@@ -157,9 +185,9 @@ int map(instruction instruc) {
   if (!no_page_table) {
     int pgtable_start = free_list[pgtable_pfn]->start;
     registers[instruc.pid] = pgtable_start;
-
+    
     // Store map info in page table
-    memory[pgtable_start] = instruc.pid;       // Our PID
+    memory[pgtable_start] = 1;                 // Stored in memory
     memory[pgtable_start + 1] = process_vpn;   // Our VPN
     memory[pgtable_start + 2] = process_pfn;   // PFN corresponding to VPN
     memory[pgtable_start + 3] = instruc.value; // Read/write
@@ -179,7 +207,7 @@ int map(instruction instruc) {
       }
 
     // Store map info in page table
-    memory[free_index] = instruc.pid;       // Our PID
+    memory[free_index] = 1;                 // Stored to memory
     memory[free_index + 1] = process_vpn;   // Our VPN
     memory[free_index + 2] = process_pfn;   // PFN corresponding to VPN
     memory[free_index + 3] = instruc.value; // Read/write 
@@ -200,6 +228,12 @@ int store(instruction instruc) {
   // First check if process has any pages allocated at all
   if (pgtable_start == -1) {
     printf("No pages have been mapped to process %d\n", instruc.pid);
+    return 1;
+  }
+
+  // Now check if we are allowed to write to this page
+  if (!memory[pgtable_start+3]) {
+    printf("Virtual page %d (physical frame %d) for process %d is not writeable\n", memory[pgtable_start+1], memory[pgtable_start+2], instruc.pid);
     return 1;
   }
 
@@ -246,8 +280,11 @@ int load(instruction instruc){
       p_addr = (16 * memory[i+2]) + (instruc.v_addr % 16); // translate address
       break;
     }
-  } if (p_addr < 0 || memory[p_addr] < 0) {
+  } if (p_addr < 0) {
     printf("Virtual address %d is not mapped for process %d\n", instruc.v_addr, instruc.pid);
+    return -1;
+  } else if (p_addr[memory] = NULL) {
+    printf("Nothing stored at virtual address %d (physical address %d)\n", memory[pgtable_start+1], memory[pgtable_start+2]);
     return -1;
   }
 
@@ -255,3 +292,38 @@ int load(instruction instruc){
 
   return memory[p_addr];  
 }
+/*
+int evict(page *pg) {
+  if (!pg->used) {
+    printf("Tried to evict empty page for some reason\n");
+    return 0;
+  }
+
+  // Set file position indicator to end of swap_space.txt
+  fseek(swap_space, 0, SEEK_END);
+  int swap_offset = ftell(swap_space);
+  
+  // Move page into swap space
+  int start = registers(pg->owner);
+  for (int i = start; i < start + 16; i++) {
+    fprintf(swap_space, memory[i]);
+    memory[i] = 0;
+  } fprintf(swap_space, "\n"); // Separate pages by line
+
+}
+
+int swap(int offset) {
+
+  if (offset % 16) {
+    printf("Bad offset passed to swap\n");
+    return 1;
+  }
+  
+  
+  while (char c = 
+
+  
+}
+*/
+  
+    
