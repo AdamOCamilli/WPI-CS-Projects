@@ -21,7 +21,7 @@ typedef struct instruction {
   unsigned int value;            // [0-255]
 } instruction;
 
-char memory[SIZE];
+unsigned char memory[SIZE];
 page **free_list;
 int registers[MAX_PROCESSES];
 
@@ -50,7 +50,7 @@ int main (int argc, char *argv[]) {
   for (int i = 0; i < MAX_PROCESSES; i++)
     registers[i] = -1; 
   for (int i = 0; i < SIZE; i++)
-    memory[i] = -1; 
+    memory[i] = '\t'; 
   
   // Instruction buffer 
   char buf[100];
@@ -204,7 +204,7 @@ int store(instruction instruc) {
   }
 
   // Now check if value is too big or negative
-  if (instruc.value < 0 || instruc.value > 127) {
+  if (instruc.value < 0 || instruc.value > 255) {
     printf("Value out of range\n");
     return 1;
   }
