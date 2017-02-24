@@ -40,7 +40,7 @@ int load(instruction instruc);
  * at from offset to a swap file, and from there to 
  * page in disk/memory starting at to offset
  */
-//int swap(int from, int to, int pid, int to_disk);
+int swap(pte entry, int to_disk);
 
 int main (int argc, char *argv[]) {
 
@@ -187,7 +187,7 @@ int store(instruction instruc) {
   }
 
   if (entry_index == -1) {
-    printf("Virtual address                      %d has not been mapped to process %d\n", instruc.v_addr, instruc.pid);
+    printf("Virtual address %d has not been mapped to process %d\n", instruc.v_addr, instruc.pid);
     return -1;
   } else if (!our_entry.rw) {
     printf("Page %d of process %d is not writeable\n", our_entry.vpn, instruc.pid);
@@ -232,38 +232,39 @@ int load(instruction instruc) {
   printf("The value %d is virtual address %d (physical address %d)\n", memory[p_addr], instruc.v_addr, p_addr);
   return 0;
 }
+
 /*
-int swap(int from, int to, int pid, int to_disk) { 
+int swap(pte *entry, int to_disk) { 
 
-  // First ensure from and to represent starting indices of pages
-  if (from % 16 || to % 16) {
-    printf("Bad offset was passed to swap. Exiting\n");
+  // Ensure entry is actually in page table
+  int entry_index = -1;
+  for (int i = 0; i < 16; i++) {
+    if (memory[i]) {
+      pte* temp = (pte*) &memory[i];
+      if (temp->pid == entry->pid && temp->vpn == entry->vpn) {
+	entry_index = i;
+        break;
+      }
+    }
+  } if (entry_index == -1) {
+    printf("Tried to swap nonexistent page\n");
     return -1;
-  }
-
-  // Determine whether page being swapped is a page table or not
-  int is_page_table;
-  if (to_disk)
-    is_page_table = (from == mem_pgtable_offsets[pid]);
-  else
-    is_page_table = (from == mem_pgtable_offsets[pid]);
-
+  }  
+  
   // Clear appropriate registers and (if memory) mark as unused in free_list
+  int 
+  if (to_disk)
+    
+  
   if (to_disk) {
-    free_list[pid]->used = 0;
-    if (is_page_table)
-      mem_pgtable_offsets[pid] = -1;
-    else
-      mem_page_offsets[pid] = -1;
+    free_list[entry->pid] = 16 * entry->pfn;
+    mem_registry[entry->pid] = -1;
   } else {
-    if (is_page_table)
-      disk_pgtable_offsets[pid] = -1;
-    else
-      disk_pgtable_offsets[pid] = -1;
+    disk_registry[entry->pid] = -1;
   }
   
   // Append page contents from memory/disk to end of swap file
-  int start = from;
+  int start = 
   int file_start = (int) ftell(swap_space);
 
   while (from < start + 16) {
@@ -335,4 +336,4 @@ int swap(int from, int to, int pid, int to_disk) {
   }
 
 }
-*/
+
