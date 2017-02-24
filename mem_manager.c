@@ -27,18 +27,13 @@ unsigned char disk[SIZE*SIZE];
 FILE* swap_space;
 page **free_list;
 int registers[MAX_PROCESSES];
-int disk_offsets[MAX_PROCESSES];
-int next_evict;                  // Which page to evict in the event of a swap
+int disk_offsets[MAX_PROCESSES * 2];
+int next_evict;                      // Which page to evict in the event of a swap
 
 int map(instruction instruc);
 int store(instruction instruc);
 int load(instruction instruc);
-/* Writes page contents to disk and resets page in memory */
-page evict(page pg);
-/* Transfer contents of range [offset, offset+16) of swap_space.txt to 
- * disk if swap_space[offset] = 0 and memory if swap_space[offset] = 1 
- */
-int swap_page(int offset);
+int swap(int from, int to, int where);
 
 int main (int argc, char *argv[]) {
 
@@ -61,8 +56,8 @@ int main (int argc, char *argv[]) {
   for (int i = 0; i < MAX_PROCESSES; i++)
     registers[i] = -1;
 
-  // Open swap file
-  swap_space = fopen("swap_space.txt","w");
+  // Open swap file in append mode
+  swap_space = fopen("swap_space.txt","a");
   
   // Instruction buffer 
   char buf[100];
@@ -187,7 +182,7 @@ int map(instruction instruc) {
     registers[instruc.pid] = pgtable_start;
     
     // Store map info in page table
-    memory[pgtable_start] = 1;                 // Stored in memory
+    memory[pgtable_start] = 4 + instruc.pid;                 // Stored in memory
     memory[pgtable_start + 1] = process_vpn;   // Our VPN
     memory[pgtable_start + 2] = process_pfn;   // PFN corresponding to VPN
     memory[pgtable_start + 3] = instruc.value; // Read/write
@@ -207,7 +202,7 @@ int map(instruction instruc) {
       }
 
     // Store map info in page table
-    memory[free_index] = 1;                 // Stored to memory
+    memory[free_index] = 4 + instruc.pid;   // Stored to memory
     memory[free_index + 1] = process_vpn;   // Our VPN
     memory[free_index + 2] = process_pfn;   // PFN corresponding to VPN
     memory[free_index + 3] = instruc.value; // Read/write 
@@ -276,15 +271,15 @@ int load(instruction instruc){
 
   // Determine if address translation is possible with frame(s) currently mapped to process
   for(int i = pgtable_start; i < pgtable_start + 16; i += 4) {
-    if (memory[i+1] ==  instruc.v_addr / 16) { // if virtual address is part of an existing virtual page
+    if (memory[i] ==  instruc.pid + 4) {  // if this page belongs to this pid
       p_addr = (16 * memory[i+2]) + (instruc.v_addr % 16); // translate address
       break;
     }
   } if (p_addr < 0) {
     printf("Virtual address %d is not mapped for process %d\n", instruc.v_addr, instruc.pid);
     return -1;
-  } else if (p_addr[memory] = NULL) {
-    printf("Nothing stored at virtual address %d (physical address %d)\n", memory[pgtable_start+1], memory[pgtable_start+2]);
+  } else if (memory[p_addr] == 0) {
+    printf("0 found at virtual address %d (physical frame %d): Could be empty or 0...\n", memory[pgtable_start+1], memory[pgtable_start+2]);
     return -1;
   }
 
@@ -292,38 +287,84 @@ int load(instruction instruc){
 
   return memory[p_addr];  
 }
-/*
-int evict(page *pg) {
-  if (!pg->used) {
-    printf("Tried to evict empty page for some reason\n");
+
+int swap(int from, int to, int to_disk) { // where = 0 -> disk, where = 1 -> memory
+
+  if (from % 16) {
+    printf("Bad from %d was passed to swap\n", from);
+    return -1;
+  }
+
+  // Check if trying to swap an empty page 
+  if (to_disk) {
+    if (!memory[from]) {
+      printf("Tried to swap empty frame %d in memory\n", from / 16);
+      return -1;
+    }
+  } else {
+    if (!disk[from + 2]) { // Will represent a PFN, should always be greater than 0 if in use
+      printf("Tried to swap from from %d in disk to frame %d in disk, but it was empty\n", from, to / 16);
+      return -1;
+    }
+  }
+
+  // Clear registers and (if memory) mark as unused in free_list
+  if (to_disk) {
+    free_list[memory[from] - 4]->used = 0;
+    registers[memory[from] - 4] = -1;
+  } else disk_offsets[disk[from]] = -1;
+  
+  // Append page contents from memory/disk to end of swap file
+  int start = from;
+  int file_start = (int) ftell(swap_space);
+
+  while (from < start + 16) {
+    if (to_disk) {
+      fputc((int) memory[from++], swap_space);
+      memory[from - 1] = 0;
+    } else {
+      fputc((int) disk[from++], swap_space);
+      disk[from - 1] = 0;
+    }
+  } fputc('\n', swap_space); // For readability
+  
+  // Now transfer contents from file to disk/memory
+
+  start = to;
+  fseek(swap_space, file_start, SEEK_SET); // get back to where we began putting content into swap_space
+
+  int ch;
+  while ((ch = fgetc(swap_space)) != EOF && ch != '\n' && to < start + 16) {
+    if (to_disk) {
+      if (to == start)
+	disk[to++] = (unsigned char) (ch - 4);
+      else
+	disk[to++] = (unsigned char) ch;
+    } else { // assume a page has been allocated for us already
+      if (to == start)
+	memory[to++] = (unsigned char) (ch + 4);
+      else
+	memory[to++] = (unsigned char) (ch);
+    }
+  }
+
+  // Check swap was successful (if so the whole program is basically messed up and we must Ctrl-C)
+  if (ch == EOF) {
+    printf("Somehow encountered end of file while swapping file index %d to %d\n", file_start, to);
+    return -1;
+  } else if (to != start + 16) {
+    printf("Somehow went to %d from file from %d\n", to, file_start);
+    return -1;
+  }
+
+  // Notify user and exit
+  if (to_disk) {
+    printf("Swapped frame %d to disk at %d\n", from / 16, to - 16);
+    return 0;
+  } else {
+    printf("Swapped disk offset %d into frame %d\n", from, to / 16);
     return 0;
   }
 
-  // Set file position indicator to end of swap_space.txt
-  fseek(swap_space, 0, SEEK_END);
-  int swap_offset = ftell(swap_space);
-  
-  // Move page into swap space
-  int start = registers(pg->owner);
-  for (int i = start; i < start + 16; i++) {
-    fprintf(swap_space, memory[i]);
-    memory[i] = 0;
-  } fprintf(swap_space, "\n"); // Separate pages by line
-
 }
-
-int swap(int offset) {
-
-  if (offset % 16) {
-    printf("Bad offset passed to swap\n");
-    return 1;
-  }
-  
-  
-  while (char c = 
-
-  
-}
-*/
-  
     
