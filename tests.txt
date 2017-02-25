@@ -1,0 +1,47 @@
+Only interesting tests for part 1 are those for illegal input:
+	        0,map,51,2
+		Value must be 0 or 1 for mapping.
+
+		0,map,10000,1
+		PID and virtual address must be greater than 0 and less than 4 and 64, respectively
+
+                0,map,0,0
+		Placed page table for PID 0 into frame 0
+		Mapped virtual address 0 (page 0) into physical frame 1
+		0,store,11,123
+		Writes are not allowed to this page
+
+                0,load,19,NA
+		Virtual address 19 has not been mapped to process 0
+
+                0,store,10,9999999
+		Value out of range
+
+                What's up, doc?
+		Please enter exactly 4 arguments for instruction. You entered 3
+
+                0,fightme,0,1
+		"fightme" is not a valid instruction
+
+For part 2, we can test various situations that require swapping:
+
+    	       (Assume PIDs 0,1,2 have been mapped)
+
+	       3,map,0,1
+	       Swapped frame 1 into disk at 0
+	       Placed page table for PID 3 into frame 0
+	       Mapped virtual address 0 (page 0) into physical frame 1
+
+	       3,store,0,123
+	       Stored value 123 at virtual address 0 (physical address 16)
+
+	       0,store,12,321
+	       Swapped frame 3 into disk at 16
+	       Swapped disk offset 0 into frame 3
+	       Stored value 34 at virtual address 0 (physical address 48)
+
+	       2,load,7,NA
+	       Swapped frame 2 into disk at 0
+	       Swapped disk offset 16 into frame 2
+	       The value 18 is virtual address 7 (physical address 39)
+	       

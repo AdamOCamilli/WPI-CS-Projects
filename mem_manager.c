@@ -24,19 +24,14 @@ typedef struct instruction {
   unsigned int value;   // [0-255]
 } instruction;
 
-// Global variables and structures
-
 unsigned char memory[SIZE];
 unsigned char disk[SIZE*SIZE];
 FILE* swap_space;
-
 int free_list[PAGE_LIMIT];
 int disk_free[PAGE_LIMIT * SIZE];
 int page_table_in_memory = 1;
 // Which page to evict in the event of a swap, follows a round-robin strategy
 int next_evict = 1;
-
-// Function headers
 
 int map(instruction instruc);
 int store(instruction instruc);
@@ -109,7 +104,7 @@ int main (int argc, char *argv[]) {
     instruc.value = (unsigned int) strtol(buf_chunks[3], (char **)NULL, 10);
 
     if (instruc.pid > 3 || instruc.pid < 0 || instruc.v_addr > 63 || instruc.v_addr < 0) {
-      printf("PID and virtual address must be greater than 0 and less than 3 and 65, respectively\n");
+      printf("PID and virtual address must be greater than 0 and less than 4 and 64, respectively\n\n");
       continue;
     }
 
@@ -218,7 +213,7 @@ int store(instruction instruc) {
   }
 
   if (entry_index == -1) {
-    printf("Virtual address %d has not been mapped to process %d\n", instruc.v_addr, instruc.pid);
+    printf("Page Fault: Virtual address %d has not been mapped to process %d\n", instruc.v_addr, instruc.pid);
     return -1;
   } else if (!our_entry->rw) {
     printf("Writes are not allowed to this page\n");
@@ -282,7 +277,7 @@ int load(instruction instruc) {
   }
 
   if (entry_index == -1) {
-    printf("Virtual address %d has not been mapped to process %d\n", instruc.v_addr, instruc.pid);
+    printf("Page Fault: Virtual address %d has not been mapped to process %d\n", instruc.v_addr, instruc.pid);
     return -1;
   }
 
@@ -327,7 +322,7 @@ int load(instruction instruc) {
   return 0;
 }
 
-int swap(pte *entry, int new_offset) { 
+int swap(pte *entry, int new_offset) {
   
   // Mark as free lists unused
   int prev_offset = entry->pfn * 16;
@@ -339,9 +334,8 @@ int swap(pte *entry, int new_offset) {
     disk_free[entry->pfn] = 16 * entry->pfn;
   }
   
-  // Append page contents from memory/disk to swap file
-  printf("At position %d in file\n", fseek(swap_space, 0, SEEK_SET));
-  
+  // Write page contents from memory/disk to start of swap file
+  fseek(swap_space,0,SEEK_SET);
   for (int i = prev_offset; i < prev_offset + 16; i++) {
     if (to_disk) {
       fputc(memory[i], swap_space);
@@ -353,7 +347,7 @@ int swap(pte *entry, int new_offset) {
   }
   
   // Now transfer contents from file to disk/memory
-  printf("At position %d in file\n", fseek(swap_space, 0, SEEK_SET));
+  fseek(swap_space,0,SEEK_SET);
   unsigned char ch;
   for (int i = new_offset; (ch = fgetc(swap_space)) != '\n' && i < new_offset + 16; i++) {
     if (to_disk) {

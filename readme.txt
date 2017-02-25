@@ -21,23 +21,40 @@ Part 1:
 	  entry->io;  // whether page refered to by this page table entry is in disk or memory
 	  ...
 
-     Tests:
-	Map:
-		0,map,0,1
-		Mapped virtual address 0 (page 0) to physical frame 1
+      Tests:
+      
+	Only interesting tests for part 1 are those for illegal input:
+		0,map,51,2
+		Value must be 0 or 1 for mapping.
 
-		0,map,15,1
-		Virtual address 15 has already been mapped to physical frame 1 for process 0
+		0,map,10000,1
+		PID and virtual address must be greater than 0 and less than 4 and 64, respectively
 
-		1,map,62,0
-		Mapped virtual address 48 (page 3) to physical frame 3
+		0,map,0,0
+		Placed page table for PID 0 into frame 0
+		Mapped virtual address 0 (page 0) into physical frame 1
+		0,store,11,123
+		Writes are not allowed to this page
 
-		1,store,63,12
-		Virtual page 3 (physical frame 3) for process 1 is not writeable
+		0,load,19,NA
+		Virtual address 19 has not been mapped to process 0
 
-		2,map,17,1
-		Not enough pages left!
+		0,store,10,9999999
+		Value out of range
+
+		What's up, doc?
+		Please enter exactly 4 arguments for instruction. You entered 3
+
+		0,fightme,0,1
+		"fightme" is not a valid instruction
 
 Part 2:
+     In order to perform swapping, we open a swap file in main and a single swap function, swap from memory/disk/ to the file to the disk/memory. The page table entry struct described above is
+     used often to determine relevant info (whether page being swapped is memory, for example) while within swap function, which requires one as a parameter.
 
+     Our eviction strategy is a simple round-robin strategy that begins at 1 and iterates up to 3 and back to one. The page containing our page table is never swapped out within this stategy.
+
+     Swap() is called when needed by each of the three part 1 functions. 
+
+	
      
