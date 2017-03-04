@@ -1,0 +1,1 @@
+cmd_/home/aocamilli/Documents/CS_3013/project_0/hello.ko := ld -r -m elf_i386 -T ./scripts/module-common.lds --build-id  -o /home/aocamilli/Documents/CS_3013/project_0/hello.ko /home/aocamilli/Documents/CS_3013/project_0/hello.o /home/aocamilli/Documents/CS_3013/project_0/hello.mod.o

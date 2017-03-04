@@ -1,0 +1,9 @@
+Node 26 created on channel 1 at (0 , 46)
+Node 26 has 1 nodes overlapping it.
+Now sending message "Hey!" to node 6 over channel 1
+Node 26 has 1 nodes overlapping it.
+(0 , 46) : Received message "¡Hola!" from node 6 over channel 1
+(0 , 46) : Received message "Hey!" from node 6 over channel 1
+Now sending message "Hello!" to node 6 over channel 1
+Now rebroadcasting message "¡Hola!" to node 6 over channel 1
+Now rebroadcasting message with id 26411 to node 6, but it has already seen this message.

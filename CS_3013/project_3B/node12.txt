@@ -1,0 +1,3 @@
+Node 12 created on channel 11 at (94 , 24)
+Node 12 has 0 nodes overlapping it.
+Node 12 has 0 nodes overlapping it.

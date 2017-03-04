@@ -1,0 +1,15 @@
+Adam Camilli
+
+Checkpoint:
+
+This a work-in-progress desciption of how I plan to implement a solution to project 3B using locks and condition variables from the POSIX library. My ultimate idea is to make use of several structs and global data structures which will allow concurrently running nodes and noisemakers to maintain complete knowledge of each other as well as their own properties, such as their ids, which nodes overlap them, what messages they have received, and so on. I plan to use the function pointed to in the creation of nodes to have a spin lock that allows nodes to broadcast messages when they acquire the lock, and while they are waiting for it, listen for messages sent from nodes they are overlapped with on every spin cycle, and append those it hears to a doubly linked list of received messages they keep track of in a struct.
+ 
+
+I currently have a program in which nodes are successfully ableto populate a global array containing their pthread_t ids as well as a global array of device_info structs, one for each node. These structs contain the information necessary for a given thread to be able to determine useful properties of itself and other nodes on the grid. My latest development was adding a method overlapping() that can successfully detect whether one node is overlapped with another, and I will soon use this to add a neighbors[] field to device_info so a node can know about all of its neighbors. The hope is that developing the means to keep track of all this information will make implementing my ultimate strategy of nodes being able to run with complete awareness of their neighbors.
+
+Final:
+
+What I ended up doing was implementing three mutexes, one for each channel, along with two condition variables for each channel: one for noise, if a noisemaker is active on that channel, and one for whether another node is talking. 
+The node function given to the threads as they are created has two paths: One for regular nodes and one for noisemakers. 
+
+

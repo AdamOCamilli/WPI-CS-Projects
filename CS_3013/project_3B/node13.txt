@@ -1,0 +1,16 @@
+Node 13 created on channel 11 at (22 , 61)
+Node 13 has 3 nodes overlapping it.
+(22 , 61) : Received message "Bonjour!" from node 2 over channel 11
+On channel 11, tried and failed to send message to node 1 on channel 6
+Now sending message "Bonjour!" to node 2 over channel 11
+On channel 11, tried and failed to send message to node 23 on channel 1
+On channel 11, tried and failed to rebroadcast message to node 1 on channel 6
+Now rebroadcasting message "Bonjour!" to node 2 over channel 11
+On channel 11, tried and failed to rebroadcast message to node 23 on channel 1
+Node 13 has 3 nodes overlapping it.
+On channel 11, tried and failed to send message to node 1 on channel 6
+Now sending message "Hello!" to node 2 over channel 11
+On channel 11, tried and failed to send message to node 23 on channel 1
+On channel 11, tried and failed to rebroadcast message to node 1 on channel 6
+Now rebroadcasting message with id 22585 to node 2, but it has already seen this message.
+On channel 11, tried and failed to rebroadcast message to node 23 on channel 1

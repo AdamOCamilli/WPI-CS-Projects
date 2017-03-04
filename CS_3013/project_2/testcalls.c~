@@ -1,0 +1,56 @@
+#include <sys/syscall.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#define __NR_cs3013_syscall1 377
+#define __NR_cs3013_syscall2 378
+#define __NR_open 5
+#define __NR_close 6
+#define __NR_read 3
+
+typedef struct ancestry {
+  pid_t ancestors[10];
+  pid_t siblings[100];
+  pid_t children[100];
+} ancestry;
+
+long testCall1(void) {
+  return (long) syscall(__NR_cs3013_syscall1);
+}
+
+long testCall2(unsigned short *target_pid, struct ancestry *response) {
+  return (long) syscall(__NR_cs3013_syscall2, target_pid, response);
+}
+
+long testOpen(void) {
+  return (long) syscall(__NR_open,"virus.txt",0x0000); //0x0000 is value of read only flag
+}
+
+long testClose(int fd) {
+  return (long) syscall(__NR_close,fd);
+}
+
+long testRead(int fd) {
+  char buf[1200]; // arbitrary buffer size
+  size_t count = 1;
+  long bytes_read = 0;
+  while ((syscall(__NR_read,fd,buf,count)) > 0) 
+    bytes_read++;
+  return bytes_read; 
+}
+
+int main() {
+  long fd = testOpen();
+  printf("The return values of the system calls are:\n");
+  printf("\tcs3013_syscall1: %ld\n", testCall1());
+  printf("\tOpen: %ld\n", fd);
+  printf("\tRead: %ld\n", testRead(fd));
+  printf("\tClose: %ld\n", testClose(fd));
+
+  struct ancestry hierarchy;
+  printf("The kernel gave back PID 
+  return 0;
+}

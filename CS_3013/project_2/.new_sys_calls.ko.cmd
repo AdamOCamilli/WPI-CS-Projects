@@ -1,0 +1,1 @@
+cmd_/home/aocamilli/Documents/CS_3013/project_2/new_sys_calls.ko := ld -r -m elf_i386 -T ./scripts/module-common.lds --build-id  -o /home/aocamilli/Documents/CS_3013/project_2/new_sys_calls.ko /home/aocamilli/Documents/CS_3013/project_2/new_sys_calls.o /home/aocamilli/Documents/CS_3013/project_2/new_sys_calls.mod.o

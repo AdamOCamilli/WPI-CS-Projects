@@ -1,0 +1,3 @@
+Node 36 created on channel 6 at (93 , 78)
+Node 36 has 0 nodes overlapping it.
+Node 36 has 0 nodes overlapping it.

@@ -1,0 +1,4 @@
+Node 25 created on channel 6 at (2 , 73)
+Node 25 has 1 nodes overlapping it.
+Node 25 has 1 nodes overlapping it.
+On channel 11, tried and failed to send message to node 7 on channel 6

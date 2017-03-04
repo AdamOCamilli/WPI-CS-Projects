@@ -1,0 +1,3 @@
+Node 8 created on channel 1 at (73 , 18)
+Node 8 has 0 nodes overlapping it.
+Node 8 has 0 nodes overlapping it.

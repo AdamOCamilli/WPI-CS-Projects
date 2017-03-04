@@ -1,0 +1,8 @@
+Node 16 created on channel 1 at (72 , 43)
+Node 16 has 1 nodes overlapping it.
+(72 , 43) : Received message "Salut!" from node 32 over channel 1
+On channel 1, tried and failed to send message to node 32 on channel 6
+On channel 1, tried and failed to rebroadcast message to node 32 on channel 6
+Node 16 has 1 nodes overlapping it.
+On channel 1, tried and failed to send message to node 32 on channel 6
+On channel 1, tried and failed to rebroadcast message to node 32 on channel 6

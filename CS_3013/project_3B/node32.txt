@@ -1,0 +1,5 @@
+Node 32 created on channel 1 at (77 , 39)
+Node 32 has 1 nodes overlapping it.
+Now sending message "Salut!" to node 16 over channel 1
+Node 32 has 1 nodes overlapping it.
+On channel 6, tried and failed to send message to node 16 on channel 1

@@ -1,0 +1,9 @@
+Node 2 created on channel 11 at (25 , 63)
+Node 2 has 3 nodes overlapping it.
+On channel 11, tried and failed to send message to node 1 on channel 6
+Now sending message "Bonjour!" to node 13 over channel 11
+On channel 11, tried and failed to send message to node 23 on channel 1
+Node 2 has 3 nodes overlapping it.
+(25 , 63) : Received message "Bonjour!" from node 13 over channel 11
+(25 , 63) : Received message "Bonjour!" from node 13 over channel 11
+(25 , 63) : Received message "Hello!" from node 13 over channel 11

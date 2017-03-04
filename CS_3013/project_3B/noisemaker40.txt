@@ -1,0 +1,3 @@
+Noisemaker 40 created on channel 1.
+Activated at (79 , 64) on channel 1.
+Deactivated at (79, 64) on channel 1

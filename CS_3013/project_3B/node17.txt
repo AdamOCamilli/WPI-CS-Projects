@@ -1,0 +1,8 @@
+Node 17 created on channel 6 at (89 , 47)
+Node 17 has 2 nodes overlapping it.
+(89 , 47) : Received message "Hello!" from node 31 over channel 6
+On channel 6, tried and failed to send message to node 3 on channel 1
+Now sending message "Salut!" to node 31 over channel 6
+On channel 6, tried and failed to rebroadcast message to node 3 on channel 1
+Now rebroadcasting message "Hello!" to node 31 over channel 6
+Node 17 has 2 nodes overlapping it.

@@ -1,0 +1,7 @@
+Node 34 created on channel 1 at (6 , 24)
+Node 34 has 1 nodes overlapping it.
+On channel 1, tried and failed to send message to node 35 on channel 6
+Node 34 has 1 nodes overlapping it.
+Now sending message "¡Hola!" to node 35 over channel 6
+(6 , 24) : Received message "Hello!" from node 35 over channel 6
+(6 , 24) : Received message "¡Hola!" from node 35 over channel 6

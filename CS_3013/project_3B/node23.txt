@@ -1,0 +1,9 @@
+Node 23 created on channel 1 at (26 , 61)
+Node 23 has 3 nodes overlapping it.
+On channel 1, tried and failed to send message to node 1 on channel 6
+On channel 1, tried and failed to send message to node 2 on channel 11
+On channel 1, tried and failed to send message to node 13 on channel 11
+Node 23 has 3 nodes overlapping it.
+On channel 1, tried and failed to send message to node 1 on channel 6
+On channel 1, tried and failed to send message to node 2 on channel 11
+On channel 1, tried and failed to send message to node 13 on channel 11

@@ -1,0 +1,5 @@
+Adam Camilli
+
+Final:
+
+For semaphores, I attempted to implement a the same strategy as I did with mutexes and condition variables, with semaphores for each of the channels (initialized at 1) and for the condition variables used in solution 1 (all initialized at 0). However, I had immense trouble getting semaphores to function as condition variables and as such only got as far using them as locks. As a result, there are no functioning noisemakers for solution 2.

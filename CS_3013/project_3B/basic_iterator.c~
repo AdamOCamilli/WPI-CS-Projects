@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <assert.h>
+
+/** Making a basic incrementer using POSIX threads.
+ */
+
+/** Declaration of thread creation function:
+ *
+ * *thread          : Pointer to thread we are creating
+ * *attr            : One of many thread options. Usually just pass in NULL
+ * function pointer : The function this thread should start running in, along with its parameter(s)
+ * *arg             : The argument to be passed to the above function when it runs
+ *
+ * Note: (void *) type allows arg and params of function to be anything!
+ 
+int pthread_create(pthread_t *thread,
+		   const pthread_attr_t *attr,
+		   void *(*start_routine)(void*),
+		   void *arg);
+
+int pthread_join(pthread_t thread,
+		 void **value_ptr);
+*/
+typedef struct myarg_t {
+  int a; // value to be incremented
+  int b; // different value to be incremented for comparison
+} myarg_t;
+
+typedef struct myret_t {
+  int x;
+  int y;
+} myret_t;
+
+void *mythread(void *arg) {
+  myarg_t *m = (myarg_t *) arg;
+  printf("%d %d\n", m->a, m->b);
+  return NULL;
+}
+
+int main() {
+  pthread_t p;
+  int rc;
+
+  myret_t *m;
+  myarg_t args;
+  args.a = 10;
+  args.b = 20;
+  rc = pthread_create(&p, NULL, mythread, &args);
+  pthread_create(&p, NULL, mythread, &args);
+  pthread_join(p, (void **) &m);
+  printf("returned %d %d\n", m->x, m->y);
+  
+  return 0;  
+}
