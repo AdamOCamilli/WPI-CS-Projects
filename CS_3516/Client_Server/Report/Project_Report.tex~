@@ -1,0 +1,95 @@
+\documentclass[12pt]{article}
+\usepackage{verbatim}
+\begin{document}
+\title{Homework 3}
+\maketitle
+\author{Adam Camilli}
+\begin{enumerate}
+\item  In some networks, the data link layer handles transmission errors by requesting damaged frames to be retransmitted. If the probability of a frame's being damaged is $p$, what is the mean number of transmissions required to send a frame? Assume that acknowledgements are never lost.
+\\ \\
+The probability $P_i$ of a given frame requiring exactly $i$ transmissions is equivalent to the product of the probability of the first $(i-1)$ attempts at failing and the probability of attempt $i$ at succeeding. 
+\[ P_i = p^{i-1})q^{i-(i-1)} = p^{i-1}(1-p) \]
+In other words, it has an arithmetic-geometric distribution, and so the mean is determined thus:
+\[E(X) = \sum_{i=1}^{\infty}iP_i = \sum_{i=1}^{\infty}ip^{i-1}(1-p) = (1-p)\sum_{i=1}^{\infty}ip^{i-1} = (1-p) \left(\frac{1}{1-p}+\frac{p}{(1-p)^2}\right) \]
+
+\begin{center}
+\fbox{
+\begin{minipage}{15em}
+
+\[ E(X) = 1 + \frac{p}{1-p} = \frac{1}{1-p} \]
+
+\end{minipage}}
+\end{center}
+\newpage
+\item The following questions are related to an M/M/1 queue given that $\rho$ is fixed at 0.6:
+  \[ \rho = 0.6 = \frac{\lambda}{\mu} = \frac{\#messages / time}{Mean(SentMessages/time)} \]
+  \begin{itemize}
+  \item What is the average number of messages stored in the system?\\ \\
+    The average number of messages $\mu_\lambda$ is derived from the state distribution of the M/M/1 Queue : \( P_k = (1-\rho)\rho^k \) 
+    \[ \mu_\lambda = \sum_{k=0}^{\infty}k(1-\rho)\rho^k = \frac{\rho}{1-\rho} = 1.5 \textrm{ messages} \]
+  \item Can a 1 second average time delay per message be achieved?  If so, what are the values of $\lambda$ and $\mu$ ? \\ \\
+    Yes, the average time delay per message is derived from $\frac{1}{\mu}$ :
+    \[ 0.6 = \frac{\lambda}{\mu} , 1 = \frac{1}{\mu} = \frac{1}{1} \]
+    \[ \mu = 1, \lambda = 0.6 \]
+  \item What is the average number of messages in service? \\ \\
+    Defining ``in service'' as being sent, the average number in service $\mu_s$ is derived by subtracting the average number in queue $\mu_q$ from the total messages in system:
+    \[ \mu_s = 1.5 - \frac{\rho^2}{1-\rho} = 0.6 \]
+    
+  \item Is there a single time at which this average number of messages is in service? \\ \\
+    No, since presumably messages are not sent in parts and so the actual number in service must be an integer.
+  \end{itemize}
+\newpage
+\item Students arrive at an ATM machine in a random pattern with an average inter-arrival time of 3 minutes. The length of transactions at the ATM machine is exponentially distributed with an average of 2 minutes.
+  \[ \textrm{Average arrival rate} = \lambda = 1\textrm{ Student}/3\textrm{ min} = \frac{1}{3} \textrm{ Student/min}\]
+  \[ \textrm{Average service rate} : \mu = 1\textrm{ Student}/2\textrm{ min} = \frac{1}{2} \textrm{ Student/min}\]
+  \[ \rho = \frac{\lambda}{\mu} = \frac{\frac{1}{3}}{\frac{1}{2}} = \frac{2}{3} \]
+  \begin{itemize}
+  \item What is the probability that a student arriving at the ATM will have to wait? 
+    \[ P(Busy) = 1 - \rho = 1 - \frac{2}{3} = \frac{1}{3} \]
+  \item What is the average length of the waiting lines $(L_q)$ that form from time to time? 
+    \[ L_q = \frac{\rho^2}{1-\rho} = \frac{\frac{1}{4}}{1-\frac{1}{2}} = 0.5 \textrm{ Students}  \]
+  \item The bank plans to install a second ATM when they are convinced that an arriving customer would expect to wait at least 5 minutes before using the machine. At what average inter-arrival time will this occur? For this arrival rate, find the average residence time and the average number of people queuing. \\ \\
+    Assuming $\mu$ remains the same, an average waiting time of 5 min results in
+    \[ \frac{\frac{\lambda}{0.5}}{0.5(1-\frac{\lambda}{0.5})} = 5 \Rightarrow \lambda = \frac{5}{14} \textrm{ min}\]
+    Under $\lambda = \frac{5}{14}$ and $\mu = 0.5$, the average residence time $T$ (assumed to be total time in service) is 
+    \[ T = \frac{1}{\mu(1-\rho)} = \frac{1}{0.5(1-\frac{5}{7})} = 7 \textrm{ min} \]
+    and the average number of students queuing $L_q$ is 
+    \[ L_q =  \frac{\rho^2}{1-\rho} = \frac{\frac{5}{7}^2}{1-\frac{5}{7}} \approx 1.786 \textrm{ Students} \]
+  \end{itemize}
+
+  \item A buffer is filled over a single input channel and emptied by a single channel with a capacity of 64 kbps. Measurements are taken in the steady state for this system with the following results:
+    \begin{center}
+      Average packet waiting time in the buffer = 0.05 seconds\\
+      Average number of packets in residence = 1 packet\\
+      Average packet length = 1000 bits\\
+    \end{center}
+    \textbf{The distributions of the arrival and service processes are unknown and cannot be assumed to be exponential!}
+What are the average arrival rate $\lambda$ in units of packets/second and the average number of packets $w$ waiting to be serviced in the buffer? \\ \\
+Since the distributions are unknown we cannot treat this as an M/M/1 Queue problem, and must instead use Little's Law:
+\begin{center}
+\fbox{
+  \begin{minipage}{15em}
+    \[ \lambda = \frac{64000}{1000} = 64 \textrm{ packets/sec} \]
+    \[ w = \lambda \cdot 0.05 = 3.2 \textrm{ packets} \]
+  \end{minipage}}
+\end{center}
+\newpage
+\item A node in a computer network can be modeled as an M/M/1 queue. The capacity of the line out of the node is 1400 bps, and there are 10 bits per message.  Under certain conditions, it is known that an average of 50 messages are stored in the system (storage buffer and output line). \\ \\
+  Since the average total number of messages in the system $L$ is 50 under certain conditions, we can determine $\rho$, $\lambda$ and $\mu$ :
+  \[ L = 50 = \frac{\rho}{1-\rho} \Rightarrow \rho = \frac{50}{51} , \lambda = 50, \mu = 51 \]
+  
+  \begin{itemize} 
+    \item Under these same conditions, what is the arrival rate?
+      \[ \lambda = 50 \textrm{ Messages/s} = 500 \textrm{ bps} \]
+    \item What is the total average time delay through the system?
+      \[ W = \frac{1}{\mu(1-\rho)} = \frac{1}{50\cdot \frac{51}{50}} = \frac{1}{51} \textrm{ sec} \]
+    \item What is the average number of messages stored in the buffer?
+      \[ L - L_q = 50 - \frac{\rho^2}{1-\rho} = \frac{50}{51} \textrm{ messages} \]
+    \item What is the average queuing delay?
+      \[ W_q = \frac{\lambda}{\mu(\mu - \lambda)} = \frac{50}{51(1)} = \frac{50}{51} \textrm{ sec} \]
+    \item What is the traffic intensity?
+      \[ \frac{aL}{R} = \frac{50\cdot 10}{51} \approx 9.804 \textrm{ E}\]  
+    \end{itemize}
+  
+  \end{enumerate}
+\end{document} 

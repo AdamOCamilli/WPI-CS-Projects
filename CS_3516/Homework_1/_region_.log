@@ -1,0 +1,127 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=prv_Homework_1 2017.5.25)  25 MAY 2017 17:47
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**&prv_Homework_1 _region_.tex
+(./_region_.tex
+LaTeX2e <2016/02/01>
+Babel <3.9q> and hyphenation patterns for 3 language(s) loaded.
+CUSTOMISED FORMAT. Preloaded files:
+        .
+ article.cls    2014/09/29 v1.4h Standard LaTeX document class
+  size12.clo    2014/09/29 v1.4h Standard LaTeX file (size option)
+        .
+No file _region_.aux.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 2.
+LaTeX Font Info:    ... okay on input line 2.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 2.
+LaTeX Font Info:    ... okay on input line 2.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 2.
+LaTeX Font Info:    ... okay on input line 2.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 2.
+LaTeX Font Info:    ... okay on input line 2.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 2.
+LaTeX Font Info:    ... okay on input line 2.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 2.
+LaTeX Font Info:    ... okay on input line 2.
+(/usr/share/texmf/tex/latex/preview/preview.sty
+Package: preview 2010/02/14 11.88 (AUCTeX/preview-latex)
+
+(/usr/share/texmf/tex/latex/preview/prtightpage.def
+\PreviewBorder=\dimen103
+)
+(/usr/share/texmf/tex/latex/preview/prauctex.def
+No auxiliary output files.
+
+
+\hbadness=\count87
+\hfuzz=\dimen104
+(/usr/share/texmf/tex/latex/preview/prauctex.cfg))
+(/usr/share/texmf/tex/latex/preview/prfootnotes.def)
+\pr@snippet=\count88
+\pr@box=\box26
+\pr@output=\toks14
+
+Preview: Fontsize 12pt
+Preview: PDFoutput 1
+)  !name(Homework_1.tex) !offset(-3) 
+! Preview: Snippet 1 started.
+<-><->
+      
+l.15   $
+        840/x > 150$ \\
+Not a real error.
+
+Preview: Tightpage -32891 -32891 32891 32891
+! Preview: Snippet 1 ended.(589824+196608x4168546).
+<-><->
+      
+l.15   $840/x > 150$
+                     \\
+Not a real error.
+
+[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+! Preview: Snippet 2 started.
+<-><->
+      
+l.16   $
+        840 > 150x$ \\
+Not a real error.
+
+! Preview: Snippet 2 ended.(506811+20972x3783526).
+<-><->
+      
+l.16   $840 > 150x$
+                    \\
+Not a real error.
+
+[2]
+! Preview: Snippet 3 started.
+<-><->
+      
+l.17   $
+        x < 28/5$ \\
+Not a real error.
+
+! Preview: Snippet 3 ended.(589824+196608x3013486).
+<-><->
+      
+l.17   $x < 28/5$
+                  \\
+Not a real error.
+
+[3]
+! Preview: Snippet 4 started.
+<-><->
+      
+l.18   For $
+            x < 5.6 km$, the dog has a higher data rate than the transmisssi...
+
+Not a real error.
+
+! Preview: Snippet 4 ended.(546132+20972x3557794).
+<-><->
+      
+l.18   For $x < 5.6 km$
+                       , the dog has a higher data rate than the transmisssi...
+
+Not a real error.
+
+[4] ) 
+Here is how much of TeX's memory you used:
+ 176 strings out of 494705
+ 2364 string characters out of 6177987
+ 52551 words of memory out of 5000000
+ 3753 multiletter control sequences out of 15000+600000
+ 8163 words of font info for 29 fonts, out of 8000000 for 9000
+ 14 hyphenation exceptions out of 8191
+ 22i,4n,24p,474b,158s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><
+/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
+Output written on _region_.pdf (4 pages, 18412 bytes).
+PDF statistics:
+ 25 PDF objects out of 1000 (max. 8388607)
+ 16 compressed objects within 1 object stream
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+

@@ -1,0 +1,73 @@
+\documentclass[12pt]{article}
+\begin{document}
+\title{Homework 1}
+\maketitle
+\author{Adam Camilli}
+\begin{enumerate}
+\item Imagine that you have trained your St. Bernard, Bernie, to carry a box of three 8mm tapes instead of a flask of brandy. (When your disk fills up, you consider that an emergency). These tapes each contain 7 gigabytes. The dog can travel to your side, wherever you may be, at 18 km/hour. For what range of distances does Bernie have a higher data rate than a transmission line whose data rate (excluding overhead) is 150 Mbps? 
+  \begin{enumerate}
+  \item The dog can carry 21 gigabytes or 168 gigabits.\\
+    A speed of $18$ kmh $= 0.005$ km/sec. \\
+    Time to travel distance $x$ km is $x/0.005 = 200x$ sec\\ 
+    Data rate of $(168/200x)$ Gbps or $840/x$ Mbps. \\
+    $840/x > 150$ \\
+    $840 > 150x$ \\
+    $x < 28/5$ \\
+    For \framebox[1\width]{$x < 5.6$ km}, the dog has a higher data rate than the transmisssion line.
+  \item If Bernie's speed is doubled: \\
+    A speed of $36$ kmh $= 0.01$ km/sec. \\
+    Time to travel distance $x$ km is $x/0.01 = 100x$ sec\\ 
+    Data rate of $(168/100x)$ Gbps or $1680/x$ Mbps. \\
+    $1680/x > 150$ \\
+    $1680 > 150x$ \\
+    $x < 56/5$ \\ 
+    For \framebox[1\width]{$x < 11.2$ km}, the dog has a higher data rate than the transmisssion line.
+  \item If each tape capacity is doubled: \\
+    The dog can carry 56 gigabytes or 448 gigabits.\\
+    A speed of $18$ kmh $= 0.005$ km/sec. \\
+    Time to travel distance $x$ km is $x/0.005 = 200x$ sec\\ 
+    Data rate of $(448/100x)$ Gbps or $4480/x$ Mbps. \\
+    $4480/x > 150$ \\
+    $4480 > 150x$ \\
+    $x < 448/15$ \\ 
+    For \framebox[1\width]{$x < 29.8667$km}, the dog has a higher data rate than the transmisssion line.
+  \item If the data rate of the transmission line is doubled:
+    The dog can carry 21 gigabytes or 168 gigabits. \\
+    A speed of $18$ kmh $= 0.005$ km/sec. \\
+    Time to travel distance $x$ km is $x/0.005 = 200x$ sec\\ 
+    Data rate of $(168/200x)$ Gbps or $840/x$ Mbps. \\
+    $840/x > 300$ \\
+    $840 > 300x$ \\
+    $x < 14/5$ \\ 
+    For \framebox[1\width]{$x < 2.8 km$}, the dog has a higher data rate than the transmisssion line.
+  \end{enumerate}
+
+\item A factor in the delay of a store-and-forward packet-switching system is how long it takes to store and forward a packet through a switch. If switching time is 10microseconds, is this likely to be a major factor in the response of a client-server system where the client is in New York and the server is in California? Assume the propagation speed in copper and fiber to be 2/3 the speed of light in vacuum. 
+  \begin{enumerate}
+    \item No. The speed of propagation is 200,000 km/sec or 200 meters/$\mu$sec. In 10 $\mu$sec the signal travels 2km. Thus, each switch adds a equivalent of 2 kilometers of extra cable. If the client and server are seperated by 3960 km, traversing just 50 switches adds 100km to the total path, which is less than a 3\% increase. Switching delay is thereforex not a major factor under these circumstances.
+  \end{enumerate}
+
+\item A client-server system uses a satellite network, with the satellite at a height of 40,000 km. What is the best-case delay in response to a request?
+  \begin{enumerate}
+  \item The request has to travel up and then back down, and the response has to travel up and then back down. The total path length traversed is therefore 160,000 km. The speed of light in air and vacuum is 300,000 km/sec, so the propagation delay alone, the best case here since the ssatellite is geo-synchronous and fixed with respect to each ground station, is 160,000/300,000 sec or about \framebox[1\width]{$0.533 sec$}.
+  \end{enumerate}
+\item How long was a bit on the original 802.3 standard in meters? Use a transmission speed of 10 Mbps and assume the propagation speed in coax is 2/3 the speed of light in vacuum.
+  \begin{enumerate}
+  \item The speed of light in coax is 200000 km/sec (200 meter/$\mu$sec). At 10Mbps, it takes 0.1$\mu$sec to transmit a bit. 0.1 * 200 = 20 meters. A bit is therefore \framebox[1\width]{20 meters long} here.
+  \end{enumerate}
+\item An image is 1600 x 1200 pixels with 3 bytes/pixel. Assume the image is uncompressed. How long does it take to transmit it over a 56-kbps modem channel? Over a 1-Mbps cable modem? Over a 10-Mbps Ethernet? Over 100-Mbps Ethernet? Over gigabet Ethernet?
+  \begin{enumerate}
+    \item Over a 56-kbps modem channel: \\
+      The image is $1600 * 1200 * 3 = 5760000$ bytes. \\
+      $T = 5760000/56000$ sec $ = 720 / 7 = $ \framebox[1\width]{$102.8571$ sec}.
+    \item Over a 1-Mpbs cable modem: \\
+      $T = 5760000/1000000$ sec = \framebox[1\width]{$5.76$ sec}.
+    \item Over a 10-Mpbs Ethernet: \\
+      $T = 5760000/10000000$ sec = \framebox[1\width]{$0.576$ sec}.
+    \item Over a 100-Mpbs Ethernet: \\
+      $T = 5760000/100000000$ sec = \framebox[1\width]{$0.0576$ sec}.
+    \item Over a 1-Gpbs cable Ethernet: \\
+      $T = 5760000/1000000000$ sec = \framebox[1\width]{$0.00576$ sec}.
+    \end{enumerate}
+\end{enumerate}
+\end{document}

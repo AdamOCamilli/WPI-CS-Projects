@@ -1,0 +1,29 @@
+\message{ !name(Homework_1.tex)}\documentclass[12pt]{article}
+\begin{document}
+
+\message{ !name(Homework_1.tex) !offset(-3) }
+
+Adam Camilli \\
+Homework 1 \\
+CS 3516\\
+May 25, 2017\\
+
+\begin{enumerate}
+\item Imagine that you have trained your St. Bernard, Bernie, to carry a box of three 8mm tapes instead of a flask of brandy. (When your disk fills up, you consider that an emergency). These tapes each contain 7 gigabytes. The dog can travel to your side, wherever you may be, at 18 km/hour. For what range of distances does Bernie have a higher data rate than a transmission line whose data rate (excluding overhead) is 150 Mbps? \\
+
+  The dog can carry 21 gigabytes, or 168 gigabits. A speed of 18 km/hour = 0.005 km/sec. The time to travel distance x km is x/0.005 = 200x sec, leading toa data rate of (168/200)x Gbps or 840/x Mbps. \\
+  $840/x > 150$ \\
+  $840 > 150x$ \\
+  $x < 28/5$ \\
+  For $x < 5.6 km$, the dog has a higher data rate than the transmisssion line.
+  \begin{enumerate}
+  \item If Bernie's speed is doubled, his speed of 36 km/hour = 0.01 km/sec. The time to travel distance x km is x / 0.01 = 100x sec, leading to a data rate of (168/100x) Gbps or 1680/x Mbps. \\
+    1680/x > 150 \\
+    1680 > 150x \\
+    x < 56/5 \\
+    For x < 11.2 km, the dog has a higher data rate than the transmission line.
+  \end{enumerate}
+\end{enumerate}
+
+\end{document}
+\message{ !name(Homework_1.tex) !offset(-29) }

@@ -1,0 +1,80 @@
+\documentclass[12pt]{article}
+\begin{document}
+\title{Homework 2}
+\maketitle
+\author{Adam Camilli}
+\begin{enumerate}
+\item A patient has a test for some disease that comes back positive (indicating he has the disease).  You are given that the accuracy of the test is 87\% (i.e.: if a patient has the disease, 87\% of the time the test yields the correct result, and if the patient does not have the disease, 87\% of the time the test yields the correct result). The incidence of the disease in the population is 1\%. Given that the test is positive, how probable is it that the patient really has the disease? 
+\\ \\
+Here we are dealing with two events:
+\begin{enumerate}
+  \item The patient has the disease, call this $D$.
+  \item The test is positive, call this $T_p$.
+  \end{enumerate}
+Given that the test is positive, we can write the conditional probability:
+\[ P(D | T_p) = \frac{P(T_p | D) \cdot P(D)}{ P(T_p | D) \cdot P(D) + P(D^c) \cdot P(T_p^c)  } = \frac{0.01 \cdot 0.87}{0.01 \cdot 0.87 + 0.99 \cdot 0.13} = 6.\overline{3}\% \]
+
+\fbox{\begin{minipage}{30em}
+Due to the inaccuracy of the test, there is still only a 6.33\% chance the patient actually has the disease.
+\end{minipage}}
+\newpage
+\item A taxicab was involved in a fatal hit-and-run accident at night. Two cab companies, the Green and the Blue, operate in the city.  You are given that:
+\begin{itemize}
+  \item 85\% of the cabs in the city are Green and 15\% are Blue.
+  \item A witness identified the cab as Blue.
+\end{itemize}
+The court tested the reliability of the witness under the same conditions that existed on the night of the accident, and concluded that the witness was correct in identifying the color of the cab 80\% of the time.  What is the probability that the cab involved in the accident was Blue, rather than Green?
+\\ \\
+Here we are dealing with three events:
+\begin{enumerate}
+  \item The taxicab is blue - $B$
+  \item The taxicab is green - $G$.
+  \item The witness is correct in identifying the color - $W_r$.
+\end{enumerate}
+We should therefore use Bayes' Ratio, as it is more suited to this kind of problem:
+\[ \frac{P(B|W_r)}{P(G|W_r)} = \frac{P(W_r|B)}{P(W_r)|G)} \cdot \frac{P(B)}{P(G)} = \frac{0.8}{0.2} \cdot \frac{0.15}{0.85} = \frac{12}{17} \]
+By the law of total probability, since \( P(G|W) + P(B|W) = 1 \),
+\[ P(B|W) = \frac{12}{12+17} \]
+\fbox{\begin{minipage}{30em}
+The probability that the cab involved in the accident was blue is approximately \( \frac{12}{29} \approx 41.4\% \). 
+\end{minipage}}
+\newpage
+\item A pair of fair dice (the probability of each outcome is 1/6) is thrown. Let X be a random variable which represents the maximum of the two numbers that comes up after each roll.
+\begin{itemize}
+\item Find the distribution of $X$.
+\item Find the expectation $E[X]$, the variance $Var[X]$, and the standard deviation $\sigma_x$.
+\end{itemize}
+The distribution of $X$ is thus:
+\begin{center}
+  \begin{tabular}{ |c|c|c|c|c|c|c| }
+    \hline
+    Rolls & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} \\
+    \hline
+    \textbf{1} & 1 & 2 & 3 & 4 & 5 & 6 \\
+    \textbf{2} & 2 & 2 & 3 & 4 & 5 & 6 \\
+    \textbf{3} & 3 & 3 & 3 & 4 & 5 & 6 \\
+    \textbf{4} & 4 & 4 & 4 & 4 & 5 & 6 \\
+    \textbf{5} & 5 & 5 & 5 & 5 & 5 & 6 \\
+    \textbf{6} & 6 & 6 & 6 & 6 & 6 & 6 \\
+    \hline
+  \end{tabular}
+  \end{center}
+With the total number of ways to roll $X = 2(X-1)+1$, the expected value $E[x]$ is
+\[ E[X] = \sum_{n=1}^{6} \frac{2(X-1)+1}{36} \cdot X = \frac{161}{36} = 4.47\bar{2} \]
+The variance $Var(X)$ is 
+\[ Var(X) = E[(X - E[X])^2] \approx 1.9715 \]
+and the standard deviation $\sigma_x$ is
+\[ \sigma_x = \sqrt{Var(X)} \approx 1.404 \]
+\newpage
+\item The mean and variance of a random variable X are 50 and 4, respectively.  Evaluate each of the following:
+  \begin{itemize}
+  \item The mean value of $X^2$.
+    \[ E(X^2) = E(X)^2 + Var(X)^2 = 2516 \]
+  \item The variance and standard deviation of $2X+3$.
+    \[ Var(2X+3) = a^2 \cdot Var(X) = 64 \]
+    \[ \mu_{2x+3} = \sqrt{64} = 8 \]
+  \item The variance and standard deviation of $-X$ 
+    \[ Var(-X) = a^2 \cdot Var(X) = 16 \]
+    \[ \mu_{-X} = \sqrt{16} = 4 \]    
+\end{enumerate}
+\end{document} 
