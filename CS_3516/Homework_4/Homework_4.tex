@@ -1,0 +1,75 @@
+\documentclass[12pt]{article}
+
+\usepackage{verbatim}
+\usepackage[left=1in, right=1in, top=1in, bottom=1in]{geometry}
+\usepackage{amsmath}
+
+\begin{document}
+
+\title{Homework 4}
+\author{Adam Camilli}
+\date{\today}
+\maketitle
+
+\begin{enumerate}
+\item If a binary signal is sent over a 3 kHz channel whose signal-to-noise ratio is 20 dB, waht is the maximum achievable data rate?
+  \\ \\
+  We are given:
+  \begin{itemize}
+  \item Number of levels in \textit{binary} signal $\Rightarrow$ 2
+  \item The signal-to-noise ratio $\Rightarrow$ 20 dB
+  \end{itemize}
+  So we need to consider the maximum data rate according to Shannon's theorem, and the Nyquist limit for binary signalling over a 3 kHz channel.
+\\ \\
+First, Shannon's Theorem gives:
+\[ \textrm{Max Data Rate} = Blog_2(1 + \frac{S}{N}) \]
+Since $\frac{S}{N}$ is a power ratio, we must convert from decibels to this power ratio:
+\[ \textrm{Signal-Noise Ratio in dB} = 10\log_{10}(\frac{S}{N}) \]
+\[ \frac{S}{N} = 10^{\frac{20}{10}} = 100 \]
+Therefore, according to Shannon's theorem, the maximum data rate is: 
+\[ \textrm{Max Data Rate} = 3000 \cdot \log_2(1 + 100) \approx 20 \textrm{ kbps} \]
+The Nyquist limit for binary signalling over a 3kHz channel, however, is only 
+\[ \textrm{Max Data Rate} = 2\cdot B\log_{2}(V\textrm{ levels}) = 2 \cdot 3000 \cdot \log_{2}2 = 6 \textrm{ kbps} \]
+Therefore the maximum \textit{achievable} data rate for a 3 kHz channel is \fbox{6 kbps}.
+
+\newpage
+
+\item How much bandwidth is there in 0.1 micron of spectrum at a wavelength of 1 micron?
+\\ \\
+Since we are dealing with a spectrum for a fiber optic cable, bandwidth is given by
+\[ B = \frac{c \cdot \delta_{\lambda}}{\lambda} \]
+where $c = 300000000$ m/s, or the speed of light, $\lambda = 1$ micron, and $\delta_{\lambda} = 0.1$ microns. We therefore have approximately \fbox{$\frac{3 \cdot 10^{13}}{1^2}$ Hz $ = 30$ THz} of bandwidth. 
+
+\item Radio antennas often work best when the diameter of the antenna is equal to the wavelength of the radio wave. Reasonable antennas range from 1 cm to 5 meters in diameter. What frequency range does this cover?
+\\ \\
+The frequency of any wave is given by the velocity (the speed of light here) over the wavelength: 
+\[ f = \frac{c}{\lambda} \]
+Thus our range will be the frequency for antennas 5 m in length to the frequency for antennas 1 cm in length:
+\[ f_l = \frac{3 \cdot 10^8}{5} = 30 \textrm{GHz} \]
+\[ f_h = \frac{3 \cdot 10^8}{0.01} = 60 \textrm{MHz} \]
+This covers the frequency range of \fbox{60 MHz to 30 GHz}.
+
+\item Ten signals, each requiring 4000 Hz, are multiplexed on to a single channel using FDM. How much minimum band-
+width is required for the multiplexed channel? Assume that the guard bands are 400 Hz wide. 
+\\ \\
+To avoid interference, we need a guard band to separate the upper and lower edges of the 10 signals, meaning 11 guard bands are needed total. 
+\[ \boxed{4000 \cdot 10 + 400 \cdot 11 = \textrm{44400 Hz}} \]
+
+\newpage
+
+\item Suppose that x bits of user data are to be transmitted over a k-hop path in a packet-switched network as a series of  packets, each containing p data bits and h header bits. Assume x>>p+h. The line speed is b bits per sec and the propagation delay is negligible.  What value of p minimizes the total delay? 
+\\ \\
+The total number of packets necessary for the transmission is $\frac{x}{p}$. \\
+The total bits to transter including data and the headers which are not included in data is $\frac{(p+h)\cdot x}{p}$ bits. \\
+To transmit all these bits takes $\frac{(p+h)\cdot x}{bp}$ sec. \\ 
+The last packet takes more time to travel by intermediate routing: $\frac{(k-1)(p+h)}{b}$ sec. The total time is thus: 
+\[ \textrm{Total Time} = \frac{(p+h)\cdot x}{bp} + \frac{(k-1)(p+h)}{b} \]
+
+To minimize this, we differentiate with respect to p, then set it equal to zero and solve for p: \[ \frac{(k-1)p^2-hx}{bp^2} = 0 \]
+\[ \boxed{ p = \sqrt{\frac{hx}{k-1}} } \]
+
+
+
+\end{enumerate}
+
+\end{document}
