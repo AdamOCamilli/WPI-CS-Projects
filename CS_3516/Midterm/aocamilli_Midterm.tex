@@ -1,0 +1,161 @@
+\documentclass[12pt]{article}
+
+\usepackage[left=1in, right=1in, top=1in, bottom=1in]{geometry}
+\usepackage{verbatim}
+\usepackage{amsmath}
+
+\title{CS 3516 Takehome Midterm}
+\author{Adam Camilli}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{enumerate}
+\item Two types of messages arrive at a router. Ten percent of the messages are “high priority” and 90 percent are “normal priority.” \\ \\
+  This system can be modeled by two binomial distributions with parameters $P(High) = p = 0.1, P(Normal) = q = 0.9$, respectively.
+  \begin{itemize}
+  \item Find the probability that 2 out of 10 messages are not “high priority.” \\ \\
+    Here we want the probability that exactly two messages are ``normal priority'', which is found using binomial distribution $X \sim b(10,q)$:
+    \[ P(X=2) = \binom{10}{2} \cdot q^2 (1-q)^8 \approx 0.0000003645 \]
+  \item Assume that messages arrive one at a time. Find the probability that 10 “normal priority” messages are received before a “high priority” message arrives. \\ \\
+    Since it is necessary that the normal priority messages arrive consecutively, they are simply modeled by $q^{10}$. The probability of the next message is being high is then $p=0.1$, giving a final answer
+    \[ q^{10} * p = 0.9^{10} \cdot 0.1 \approx 0.0349 \]
+  \item Find the mean number of “high priority” messages expected in 10 messages.
+    \[ \mu = np = 10\cdot 0.1 = 1 \textrm{ high priority message.}\]
+  \end{itemize}
+
+\newpage
+
+\item Messages arrive at a router at an average rate of 15 messages per second. The number of messages that arrive in 1 second is known have a Poisson distribution. \\ \\
+  \begin{itemize}
+  \item Find the probability that no messages arrive in a 1 second period. 
+   Since it follows $X \sim \textrm{Poi}(15)$:
+   \[ P(0 \textrm{ msg in 1 sec }) = P(X=10) = e^{-\lambda}\frac{{\lambda}^k}{k!} = e^{-15}\frac{15^0}{0!} \approx 0.000000306 \]
+  \item Find the probability that more than 10 messages arrive in a 1 second period. 
+    \[ P(X > 10) = 1 - P(X=0) - P(X=1) - ... - P(X = 10) \approx 0.882 \] 
+  \item Find the mean number of messages that are expected to arrive in a 1 second period. 
+    \[ \textrm{Mean } = \lambda = 15\]
+  \end{itemize}
+
+\newpage
+
+\item Assume that you can model the performance of a router as an M/M/1 queuing system. 
+  \begin{itemize}
+   \item What is the traffic intensity $\rho$ of a router which has 10 messages waiting in the queue on the average? 
+     \[ \textrm{Traffic Intensity } = \rho \]
+     \[ \textrm{Average \# of Messages in Queue } = \frac{\rho^2}{1-\rho} = 10 \textrm{ (Ignore trivial negative solution)} \]
+     \[ \rho = \sqrt{35} - 5 \approx 0.9191\]
+   \item What is the average number of messages in residence $r$ in the router? 
+     \[ \textrm{Average \# of Messages Resident in System } = \frac{\rho}{1-\rho} = \frac{0.9191}{1-0.9191} \approx 10.916 \] 
+   \end{itemize}
+
+\newpage
+
+\item Consider a router to which packets arrive as a Poisson process at a rate of 4,500 packets/sec such that the time taken to service a packet has a Poisson distribution.  Suppose that the mean packet length is 250 bytes, and that the output link capacity is 10 Mbps. 
+  \[ \lambda = 4500 \textrm{ Packets/sec } = 4500 \cdot 250 \textrm{ bps} = 1,125,000 \textrm{ bps} \]
+  \[ \mu = 10,000,000 \textrm{ bps} \]
+  \[ \rho = \frac{1,125,000}{10,000,000} = 0.1125 \]
+  \begin{itemize}
+  \item What is the mean residence time $T_r$ of a packet in the system? 
+    \[ T_r = \frac{1}{\mu (1-\rho)} = \frac{1}{10,000,000 \cdot (1-0.1125)} = \frac{1}{8,875,000} \textrm{ sec} \]
+  \item What is the mean number of packets waiting to be processed in the queue?   
+    \[ T_{wait} \textrm{ bits} = \frac{\rho^2}{1-\rho} = \frac{0.1125^2}{1-0.1125} \approx 0.0143 \textrm{ bits} \]
+    \[ T_{wait} \textrm{ packets} = \frac{T_{wait} \textrm{ bits}}{250} \approx \frac{0.0143}{250} \textrm{ packets} \]
+  \end{itemize}
+
+\newpage
+
+\item A buffer is filled over a single input channel and emptied by a channel with capacity of 100 Mbps. Measurements are made in the steady state for this system with the following results: \\
+  \begin{center}
+    Average number of packets in residence  = 1 packet \\
+    Average waiting time/packet in the queue =  80 micro-seconds \\
+    Average packet length = 1000 bytes \\
+  \end{center}
+  The distributions of the arrival and service processes are unknown and cannot be assumed to be exponential! \\ 
+  Find the average arrival rate $\lambda$ in units of packets/sec and the average number of packets $w$ waiting to be serviced in the queue. \\ \\
+
+  Since we don't know the distributions, we must use Little's Law
+  \[ N = \lambda T \] 
+  where $T$ is the waiting time + service time($\frac{1}{\mu}$):
+  \[ T = 0.00008 + \frac{1}{\mu} = 0.00008 + \frac{1}{\frac{100,000,000}{1000}} = 0.00008 + \frac{1}{100000} = 0.00009 \textrm{ sec} \]
+  Now we can determine $\lambda$: 
+  \[ \lambda = \frac{N}{T} = \frac{1}{0.00009} = 11111.\overline{111} \textrm{ packets/sec} \]
+  \\
+  The average number of packets in queue is then given by 
+  \[ w = \lambda \cdot W_q = 11111.\overline{111} \cdot 0.00008 = \frac{8}{9} \textrm{ packets} \]
+
+\newpage
+
+\item Given an M/M/1 queuing system with a mean arrival rate of 1000 packets/second, what is the average service rate $\mu$ in units of packets/second and utilization $\rho$ that will ensure that the residence time of a packet in the system will be 1 milli-second or less 90\% of the time? \\ \\
+
+The average residence time is given by 
+\[T_r = \frac{\lambda}{\mu - \lambda} = \frac{\rho}{1-\rho}\]
+meaning we must solve equation
+\[ 0.001 = \frac{1000}{\mu - 1000} \]
+\[ 0.001\mu = 1000 + 1 \Rightarrow \mu = \frac{1001}{0.001} = 1001000 \textrm{ packets/sec} \]
+
+\newpage
+
+\item Consider the queuing system shown below. Assume that the arrival and service processes have Poisson distributions. \\ \\
+Compute the server utilization $\rho$  and the average residence time a packet spends in the entire system $T_r$, given the arrival rate $\lambda$, average service time $T_s$ and traffic partitioning probability $p$. \\ \\
+Since the message has a $p$ probability of being sent again, we adjust the arrival rate:
+\[ \lambda_{split} = \lambda + \lambda\cdot p = (1+p)\cdot \lambda \] 
+\[ \rho = \frac{(1+p)\cdot\lambda}{\mu} \]
+The average residence time $T_r$ is therefore:
+\[ T_r = \frac{1}{\mu-\lambda} = \frac{1}{\mu - (1+p)\cdot\lambda} \]
+
+\newpage
+
+\item How much bandwidth (in units of Hertz) is there in 0.1 microns of spectrum in the 1.55 micron band using fiber optic medium?  \\ \\
+ 
+Given that we are using fiber optics, the bandwidth $B$ is given by 
+\[ B = \frac{c \cdot \delta_{\lambda}}{\lambda^2} = \frac{300,000,000 \cdot 0.1}{1.55^2} \approx 12486992.72 \textrm{ Hz} \]
+
+\newpage
+
+\item A digitized TV picture is to be transmitted from a source that uses a matrix of 480 x 500 pixels, where each pixel can have one of 32 intensity values.  Assume that 30 pictures are sent every second.  
+  \begin{itemize}
+  \item What is the data rate in units of bits/second that will be required to transmit this picture on a communications channel? 
+    
+    \[ (480 \cdot 500) \cdot 30 = 7200000 \textrm{ pixels/sec} \]
+    \[ \log_2(32) = 5 \textrm{ bits/pixel} \]
+    Therefore the required data rate is 
+    \[ 7200000 \cdot 5 = 36000000 \textrm{ bps} \]
+  \item Given that this picture is to be transmitted over a noise-less CATV channel with a bandwidth of 6 MHz, will a signal set of QAM-64 be sufficient to achieve that data rate? \\ \\
+    For a noiseless channel of 6 MHz, use Nyquist's Theorem for QAM-64: 
+    \[ 2(6000000) \cdot \log_2(64) = 72 MHz \]
+    Since this is double the max required bit rate from a), the signal set will be more than sufficient to send the picture.
+  \item What is the signal-to-noise ratio in units of dB that will be required to transmit this picture on a noisy CATV channel with a bandwidth of 6 MHz? \\ \\
+    We now turn to Shannon's Theorem:
+    \[ 6000000 \cdot \log_2(1+\frac{S}{B}) = 36000000 \]
+    \[ \frac{S}{B} = 65 \textrm{ bps} \]
+    Converting this to decibels, we get:
+    \[ 10\log_{10}(65) \approx 18.129 \textrm{ dB} \]
+  \end{itemize}
+
+\newpage
+
+\item As shown in Figure 2-53 on page 185 in TAN, a cable modem uses a QAM-64 signal set for downstream traffic and a QPSK signal set for upstream traffic to exchange frames with the head-end of a CATV system.  The frequency bands allocated for upstream and downstream traffic on a CATV system for Internet access, as shown in Figure 2-52 on page 182 of TAN, are 5 – 42 MHz and 550 – 750 MHz, respectively. \\ \\
+Assuming that all of the available bandwidth allocated for upstream and downstream traffic noted above has a sufficient signal-to-noise ratio to support the Nyquist data rate, what are the total capacities of the upstream and downstream channels of a CATV system in units of bits per second? \\ \\ \\
+
+Downstream traffic:
+\[DR_{max} = 2 \cdot (750000000 - 550000000) \cdot \log_2(64) = 2 \textrm{ GBit/sec} \]
+Upstream traffic:
+\[ DR_{max} = 2 \cdot (42000000 - 5000000) \cdot \log_2(4) = 148 \textrm{ MBit/sec} \]
+
+\newpage
+
+\item Within the synchronous TDM hierarchy, multiple T1 carriers are multiplexed into higher order carriers. For example, four T1 channels are multiplexed onto one T2 channel running at 6.312 Mbps, seven T2 channels are multiplexed onto one T3 channel running at 44.736 Mbps, and six T3 channels are multiplexed onto one T4 channel running at 274.176 Mbps.  
+  \begin{itemize}
+  \item How many T1 user slots (or channels) are contained in a T4 frame?
+    \[ 24 \cdot 4 \cdot 7 \cdot 6 = 4032 \textrm{ T1 user slots} \]
+  \item What is the time duration and total data rate available to all users in a T4 frame, assuming that each user has access to all eight bits in a user channel? \\ \\
+    If the users have access to all 8 bits in a T1 frame, they can achieve a 8 bits/125 $\mu$sec or 64 KBits/sec data rate. Extending this to T4:
+    \[ 64 \cdot 4 \cdot 7 \cdot 6 = 10752 \textrm{ KBit} \]
+    \[ 0.000125 \cdot 24 \cdot 4 \cdot 7 \cdot 6 = 0.504 \textrm{ sec}\] 
+  \end{itemize}
+
+\end{enumerate}
+
+\end{document}

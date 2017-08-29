@@ -1,0 +1,59 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath}
+\usepackage[left=1in, right=1in, top=1in, bottom=1in]{geometry}
+\usepackage{mathtools}
+
+\begin{document}
+
+\title{Homework 5}
+\author{Adam Camilli}
+\date{\today}
+
+\maketitle
+
+\begin{enumerate}
+\item An upper-layer packet is split into 10 frames, each of which has an 80 percent chance of arriving undamaged. If no error control is done by the data link protocol, how many times must the message be sent on average to get the entire thing through? \\ \\
+The probability of the whole message getting through $p = 0.8^{10} $:
+\[P = \sum_1^{\infty} ip(1-p)^{i-1} \]
+Use derivative formula for sum of an infinite geometric series:
+\[ S = \sum_i^{\infty} q^{i} = \frac{1}{1-q} \]
+\[ S' = \sum_i^{\infty} iq^{i-1} = \frac{1}{(1-q)^2} \]
+Now, using $ q = 1 - p $:
+\[ P = \frac{1}{p} = \frac{1}{0.8^{10}} \approx 9.31 \text{ transmissions} \]
+
+\item To provide more reliability than a single parity bit can give, an error-detecting coding scheme uses one parity bit for checking all the odd-numbered bits and a second parity bit for all the even-numbered bits. What is the Hamming distance of this code? \\ \\
+
+The first parity bit can detect even-numbered bits and the second parity bit can detect odd-numbered bits. However, they can only detect single errors for sure, that is, d=1. The Hamming distance is therefore $d+1=2$.
+
+\item What is the remainder obtained by dividing $x^7 + x^5 + 1$ bythe generator polynomial $x^3+1$? \\ \\
+With simple polynomial long division,
+\[x^2 + x + 1\]
+which corresponds to CRC error code $111$.
+
+\item A 3000-km-long T1 trunk is used to transmit a 64-byte frame using protocol 5. If the propagation speed is $6 \mu$sec/km, how many bits should the sequence number be? \\ \\
+
+Window has to be large enough for transmitter to transmit until the first acknowledgement has been received. 
+\[\frac{w}{1+2BD} = 1 , B = 1.536, D = 18000 \cdot 10^{-6} \]
+\[ w = 2BD + 1 = 109 \text{ frames}\]
+For protocol 5, if window size is 109, we need at least 110 distinct sequence numbers.
+\[ \text{Required Bits } = \lceil \log_2 110 \rceil = 7 \text{ bits}\]
+
+\item Frames of 1000 bits are sent over a 1 Mbps channel using a geostationary satellite whose propagation time from the earth is 270 msec. Acknowledgements are always piggybacked onto data frames. The headers are very short. Three bit sequence numbers are used. What is the maximum achievable channel utilization for: \\ \\
+Since we can't ignore transfer time,
+\[ \text{ Utilizaiton } = \frac{w}{2+2BD} \]
+where BD are in frames instead of bits.
+  \begin{enumerate}
+  \item Stop and wait? \\
+    Window size is 1 frame:
+    \[ U = \frac{1}{2\cdot \frac{10^6\cdot 270 \cdot 10^{-3}}{1000} + 2} = 0.0018 = 18\%\] 
+  \item Protocol 5 (go-back-N)?
+    Window size is $8 - 1 = 7$ frames:
+    \[ U = \frac{7}{2\cdot \frac{10^6 \cdot 270 \cdot 10^{-3}}{1000} +2} = 0.0129 = 1.26\% \]
+  \item Protocol 6 (selective repeat)?
+    Window size is $\frac{8}{2}=4$ frames:
+    \[ U = \frac{4}{2\cdot \frac{10^6 \cdot 270 \cdot 10^{-3}}{1000} +2} = 0.00738 = 0.738\%\]
+  \end{enumerate}
+\end{enumerate}
+
+\end{document}
