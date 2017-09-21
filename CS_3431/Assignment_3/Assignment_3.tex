@@ -1,0 +1,151 @@
+\documentclass[12pt]{article}
+
+\usepackage[left = 1in, right = 1in, top = 1in, bottom=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tcolorbox}
+
+\begin{document}
+
+\title{CS 3431 Assignment 3}
+\author{Adam Camilli (aocamilli@wpi.edu)}
+\date{\today}
+\maketitle
+\textbf{\underline{Part 1: Tours}}
+\begin{enumerate}
+\item List for each level of guide - junior guide, guide or senior guide - how many mismatches there are between the required tour’s vehicle type and the guide's license type. \\
+  \begin{align*}
+    RT_\theta \leftarrow &\textrm{ } \Big(RT \bowtie_{RT.customerID=C.customerID} C\Big) \bowtie_{RT.tourID=T.tourID} T \\ \\
+    M_1 \leftarrow &\textrm{ } \Big(RT_{\theta}.vehicleType = \text{'boat'}\Big) \wedge \Big(RT_{\theta}.licenseType \neq \text{'sea'} \wedge RT_{\theta}.licenseType \neq \text{'both'}\Big) \\ \\
+    M_2 \leftarrow &\textrm{ } \Big(RT_{\theta}.vehicleType = \text{'car'} \vee RT_{\theta}.vehicleType = \text{'bus'}\Big) \\
+                         &\textrm{ }\wedge \\
+                         &\textrm{ }\Big(RT_{\theta}.licenseType \neq \text{'land'} \wedge RT_{\theta}.licenseType \neq \text{'both'}\Big) \\
+  \end{align*}
+    \begin{tcolorbox}
+      \begin{center}
+        \scalebox{1.2}{$\sigma_{M_1 \vee M_2} \Bigg(\gamma_{title,\text{COUNT}(title)\text{ AS 'Mismatches'}}\big(RT_\theta\big)\Bigg) $}
+      \end{center}
+    \end{tcolorbox}
+  \item For each customer, list the first name, last name, and total amount being spent for land-based tours. \\
+    \[ RT_\theta \leftarrow \textrm{ } \Big(RT \bowtie_{RT.customerID=C.customerID} C\Big) \bowtie_{RT.tourID=T.tourID} T \]
+    \begin{tcolorbox}
+      \begin{center}
+        \scalebox{1.2}{$\sigma_{vehicleType \neq \text{'boat'}}\Bigg(\gamma_{firstName, \text{ }lastName,\text{ SUM}(price)\text{ AS 'TotalLandPrice'}}\big(RT_\theta\big)\Bigg)$}
+      \end{center}
+    \end{tcolorbox}
+
+  \item Determine the customer who will make the most number of visits to tour locations. List the firstName, lastName, and the number of location visits (use the heading Visits).
+    \begin{tcolorbox}
+      \begin{center}
+        \scalebox{0.9}{$\gamma_{firstName,\text{ }lastName,\text{ MAX(}Visits\text{) AS Visits}}\Bigg(\gamma_{firstName,\text{ }lastName,\text{ COUNT(}locationID\text{) AS Visits}}\big(RT_\theta\big)\Bigg)$}
+      \end{center}
+    \end{tcolorbox}
+      
+\end{enumerate}
+
+\textbf{\underline{Part 2: Science Fiction Books}}
+\begin{enumerate} 
+\item SF stands for science fiction books. Based on the given primary keys, specify below the foreign key relationships that exist between the tables that would make sense. 
+  \begin{enumerate}
+  \item Write the constraints using the following format: Foreign Key Table1.ID1 References Table2.ID2. \\ \\
+    Foreign Key SF.publisherName References P.publisherName. \\
+    Foreign Key S.warehouseCode References W.code \\
+    Foreign Key S.ISBN References SFBooks.ISBN \\
+    Foreign Key AB.ISBN References SFBooks.ISBN \\
+    Foreign Key AB.fullName AB.address References A.fullName A.address  \\
+    
+  \item Write named SQL constraints for the foreign keys. Note that if a publisher goes out of business, all of the books published by that publisher should automatically be deleted. Otherwise, tuples in referring tables are not deleted. Assume the tables with the field names already exist but without any foreign key constraints. Use ALTER commands to create the foreign key constraints. 
+    \\ \\
+    \verb|ALTER TABLE SFBooks ADD CONSTRAINT SFBooks_publisherName_FK (publisherName)| \\ \verb|    REFERENCES Publishers(publisherName) ON DELETE CASCADE;| \\ \\
+    \verb|ALTER TABLE Stocks ADD CONSTRAINT Stocks_warehouseCode_FK (warehouseCode)| \\ \verb|    REFERENCES Warehouses(publisherName);| \\ \\
+    \verb|ALTER TABLE SFBooks ADD CONSTRAINT Stocks_ISBN_FK (ISBN)| \\ \verb|    REFERENCES SFBooks(ISBN) ON DELETE CASCADE;| \\ \\
+    \verb|ALTER TABLE AuthorBooks ADD CONSTRAINT AuthorBooks_ISBN_FK (ISBN)| \\ \verb|    REFERENCES SFBooks(ISBN) ON DELETE CASCADE;| \\ \\
+    \verb|ALTER TABLE AuthorBooks ADD CONSTRAINT AuthorBooks_fullName_FK (fullName)| \\ \verb|    REFERENCES SFBooks(fullName) ON DELETE CASCADE;| \\ \\
+    \verb|ALTER TABLE AuthorBooks ADD CONSTRAINT AuthorBooks_ISBN_FK (address)| \\ \verb|    REFERENCES SFBooks(address);| \\ \\
+  \end{enumerate}
+\item For each author, list the author name and address, and the average price of the author’s books written by the author before 2000. For just this question, use natural joins instead of theta joins.
+  \begin{enumerate}
+  \item Write the relational algebra:
+    \begin{tcolorbox}
+      \begin{center}
+        \scalebox{1.2}{$\gamma_{fullName,\text{ }address,\text{ AVG(}price\text{)}}\Big(AB \bowtie_{SF.year < 2000} SF\Big)$}
+        \end{center}
+      \end{tcolorbox}
+  \item Write the SQL code for the above, but sorted by author names
+\begin{verbatim}
+SELECT AuthorBooks.fullName, AuthorBooks.address, AVG(SFBooks.price)
+FROM AuthorBooks NATURAL JOIN SFBooks
+WHERE SFBooks.year < 2000
+GROUP BY AuthorBooks.fullName, AuthorBooks.address
+ORDER BY AuthorBooks.fullName;
+\end{verbatim}
+  \end{enumerate}
+\item Report the warehouse code and city for warehouses that stock fewer than 10 copies of any book published by the publisher ‘Wiley’.
+  \begin{enumerate}
+  \item Write \textbf{\underline{efficient}} relational algebra.
+    \begin{tcolorbox}
+      \begin{center}
+        \begin{align*}
+          \Pi_{code,\text{ }city}\Bigg(&W \bowtie_{W.code=S.warehouseCode} \\ 
+                                       &\sigma_{numberOfBooks < 10} \Big(S \bowtie_{S.ISBN=SF.ISBN} \\ 
+                                       &\sigma_{publisherName=\text{'Wiley'}}\big(SF\big)\Big)\Bigg) \\
+        \end{align*}
+      \end{center}
+    \end{tcolorbox}
+          
+  \item Write \textbf{\underline{efficient}} SQL code.
+\begin{verbatim}
+SELECT code,city
+FROM Warehouses
+WHERE code IN 
+    (SELECT warehouseCode
+     FROM Stocks
+     WHERE numberOfBooks < 10 AND ISBN IN
+         (SELECT ISBN
+          FROM SFBooks
+          WHERE publisherName='Wiley')
+    );
+\end{verbatim}
+  \end{enumerate}
+    
+\end{enumerate}
+
+\newpage
+
+\textbf{\underline{Part 3: Relational Algebra}}
+\begin{enumerate}
+\item 
+    \begin{tabular}{|c|c|c|c|}
+      \hline
+      A & B & Q & T \\
+      \hline 
+      6 & 4 & David & 6 \\
+      3 & 1 & Tom & 3 \\
+      3 & 2 & Susan & 3 \\
+      \hline
+    \end{tabular}
+
+\item
+    \begin{tabular}{|c|c|c|c|}
+      \hline
+      B & Q & Y & Z \\
+      \hline 
+      3 & Lisa & Susan & 12 \\
+      \hline
+    \end{tabular}
+\item
+    \begin{tabular}{|c|c|c|c|c|c|}
+      \hline
+      Z & G & A & B & Q & H  \\
+      \hline 
+      $\alpha$ & 2 & 2 & 3 & 4 & 1 \\
+      $\alpha$ & 2 & 2 & 5 & 10 & 1 \\
+      $\beta$ & 8 & 2 & 3 & 3 & 3\\  
+      \hline
+    \end{tabular}
+  
+
+\end{enumerate}
+
+
+\end{document}

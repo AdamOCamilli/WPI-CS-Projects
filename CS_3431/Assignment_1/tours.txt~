@@ -1,0 +1,18 @@
+/*
+ * Written 8/30/17 by Adam Camilli (aocamilli@wpi.edu)
+ * Plaintext list of SQL commands to be run for CS3431 Assignment 1
+ */
+
+/*
+ *
+ * First: DROP commands to allow repeated running of commands contained in this file
+ *
+ */
+
+/* Make sure to drop ReservedTours last since it contains IDs of elements in previous three tables */
+DROP TABLE ReservedTours;
+DROP TABLE Customers;
+DROP TABLE Guides;
+DROP TABLE Tours;
+
+

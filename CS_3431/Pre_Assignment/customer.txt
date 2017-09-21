@@ -1,0 +1,18 @@
+drop table customer;
+create table customer (
+   id number(3),
+   name varchar2(25),
+   city varchar2(25),
+   age number(3)
+);
+insert into customers values(1, 'Jim Smith', 'Cambridge', 51);
+insert into customers values(2, 'Tom Smith', 'Cambridge', 51);
+insert into customers values(3, 'Elane Moore', 'San Diego', 53);
+insert into customers values(4, 'John Doe', 'Worcester', 23);
+insert into customers values(5, 'Jane Doe', 'Worcester', 24);
+insert into customers values(6, 'Tom Jones', 'Boston', 41);
+insert into customers values(7, 'Mary Jones', 'Boston', 37);
+insert into customers values(8, 'Oscar Tam', 'Worcester', 17);
+insert into customers values(9, 'Ellen Brown', 'Cambridge', 21);
+insert into customers values(10, 'Art Johnson', 'Boston', 18);
+select * from customers;

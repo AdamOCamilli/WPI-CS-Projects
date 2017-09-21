@@ -1,0 +1,65 @@
+* Notes for CS 3431 (first notes with Org!) *
+
+** Got exam back 87/100, little better than average (85)
+** Prof strongly recommended we get as used to SQLDeveloper as possible
+
+** Advanced SQL: Views (PowerPoint)
+*** Views: SQL query that is registered (stored) inside a DB
+**** Any query can be a view
+
+**** Needed for: 
+1. Frequent queries
+2. Complex queries (simpler than global temporary tables)
+3. Complex queries (written once and stored in DB)
+4. Logical data independence
+5. Hiding Info (infosec)
+
+**** Base table may change, but view is still the same
+
+**** Any code that queries the view will not change because view output is still the same
+
+*** Can hide view but not original tables.
+
+**** Querying a view is the exact same as querying a table
+Execution DOES NOT INVOLVE CREATION OF A TEMP TABLE
+Actually replaces view name with defintion (i.e. SQL code) and executes it
+
+** SQL Developer Work:
+*** Connected to SQLDeveloper for the first time 
+*** Create view syntax:
+create view V as
+(select ... from ... where ...
+UNION
+ select ... from ... where ...
+UNION 
+ ...
+ );
+
+** Triggers
+*** The constraints we looked at can be captured by Primary Key, Unique, etc.
+*** When these constraints get more complex, we need triggers.
+**** EX: Sum of loans taken by customer <= 100000
+**** EX: Students can not take the same course after getting pass grade in it
+*** Trigger: A procedure that runs automatically when a certain event occurs in DBMS
+ Create [or Replace] Trigger <name>
+ Before | After Insert | Update
+ Delete
+ [Of <attribute>]
+ On <tablename>
+*** Trigger Components:
+
+**** Event: Event that activates trigger
+***** Insert
+***** Update
+***** Delete
+
+**** Condition (OPTIONAL): If cond is true, execute trigger
+***** Before event (Trigger -> Event)
+***** After event (Event -> Trigger)
+
+**** Action (Granularities): The actions performed by the trigger
+***** Row-level trigger (Execute once for each row)
+****** Only use when you what you're doing (like using *)
+***** Table-level trigger (Execute once for each statement)
+****** Don't need to write "For Each Statement", only "For Each Row" requires it
+
