@@ -1,21 +1,151 @@
 \documentclass[12pt]{article}
 
-\usepackage[left=1in, right=1in, top=1in, bottom=1in]{geometry}
+\usepackage[margin = 1in]{geometry}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{bm}
 \usepackage{tikz}
 \usepackage{mathtools}
-\usepackage{color}
 \usetikzlibrary{automata,positioning,arrows.meta,calc}
 \tikzset{>={Latex[scale=1.5]}}
 
 \begin{document}
 
-\title{CS 3133: Homework 3}
+\title{CS 3133: Homework 4}
 \author{Adam Camilli (aocamilli@wpi.edu)}
 \date{\today}
 \maketitle
+
+\begin{enumerate}
+\item Use the technique from Section 6.1 in the book to build the
+  state diagram of an NFA-$\lambda$ that accepts the language
+  $\bm{b(ab)^{\star}b}$. \\ \\
+  To build this language using the recursive definition of regular
+  languages in the manner described in Section 6.1, we can build
+  the language $b(ab)^{\star}b$ using the singleton sets $\{a\} \text{ and } \{b\}$. The
+  only tricky part is that we are not interested in only $\{ab\}$ but
+  $\{ab\}^{\star}$. This is easily represented, however, with a
+  looping $\lambda$-transition:
+
+  \begin{center}
+    \begin{tikzpicture}[shorten >=1pt, node distance=2cm, auto]
+
+      \node[state] (q0a) {}; %starting node
+      \draw (q0a.west) -- ++(-3mm,3mm);
+      \draw (q0a.west) -- ++(-3mm,-3mm);
+      \node[label={$\bm{a}$}] (q0a_title) at (1, 0.6) {};
+      \node[state,accepting] (q1a) [right of=q0a] {};
+      \node[state] (q0b) [right of=q1a] {}; %starting node
+      \draw (q0b.west) -- ++(-3mm,3mm);
+      \draw (q0b.west) -- ++(-3mm,-3mm);
+      \node[label={$\bm{b}$}] (q0b_title) at (1+2+1+1,0.6) {};
+      \node[state,accepting] (q1b) [right of=q0b] {};
+      \node[state] (q0ab) [below of=q0a] {}; %starting node
+      \draw (q0ab.west) -- ++(-3mm,3mm);
+      \draw (q0ab.west) -- ++(-3mm,-3mm);
+      \node[label={$\bm{ab}$}] (q0ab_title) at (1+2, 0.6-2) {};
+      \node[state] (q1ab) [right of=q0ab] {};
+      \node[state] (q2ab) [right of=q1ab] {};
+      \node[state,accepting] (q3ab) [right of=q2ab] {};
+      \node[state,accepting] (q0ab*) [below of=q0ab] {}; %starting node
+      \draw (q0ab*.west) -- ++(-3mm,3mm);
+      \draw (q0ab*.west) -- ++(-3mm,-3mm);
+      \node[label={$\bm{(ab)^{\star}}$}] (q0ab*_title) at (1+2, 0.6-2-2) {};
+      \node[state] (q1ab*) [right of=q0ab*] {};
+      \node[state] (q2ab*) [right of=q1ab*] {};
+      \node[state,accepting] (q3ab*) [right of=q2ab*] {};
+      \node[state] (q0full) at (0,-7) {}; %starting node
+      \draw (q0full.west) -- ++(-3mm,3mm);
+      \draw (q0full.west) -- ++(-3mm,-3mm);
+      \node[label={$\bm{b(ab)^{\star}b}$}] (q0full_title) at (1+2, 0.6-7-0.2) {};
+      \node[state] (q1full) [right of=q0full] {};
+      \node[state] (q2full) [below of=q0full] {};
+      \node[state] (q3full) [right of=q2full] {};
+      \node[state] (q4full) [right of=q3full] {};
+      \node[state] (q5full) [right of=q4full] {};
+      \node[state] (q6full) [right of=q1full] {};
+      \node[state,accepting] (q7full) [right of=q6full] {};
+      
+      \path[->] (q0a) edge node {a} (q1a)
+                (q0b) edge node {b} (q1b)
+                (q0ab) edge node {a} (q1ab)
+                (q1ab) edge node {$\lambda$} (q2ab) 
+                (q2ab) edge node {b} (q3ab)
+                (q0ab*) edge node {a} (q1ab*)
+                (q1ab*) edge node {$\lambda$} (q2ab*)
+                (q2ab*) edge node {b} (q3ab*)
+                (q3ab*) edge [bend left] node {$\lambda$} (q0ab*)
+
+                (q0full) edge node {b} (q1full)
+                (q1full) edge node {$\lambda$} (q6full)
+                (q1full) edge [left, near start] node {$\lambda$} (q2full)
+                (q2full) edge node {a} (q3full)
+                (q3full) edge node {$\lambda$} (q4full)
+                (q4full) edge node {b} (q5full)
+                (q5full) edge [bend left] node {$\lambda$} (q2full)
+                (q5full) edge [right, midway] node {$\lambda$} (q6full)
+                (q6full) edge node {b} (q7full);
+                
+              \end{tikzpicture}
+            \end{center}
+\newpage
+  
+\item \textbf{6.3} (p. 217) The language of the DFA M in Example 5.3.7
+  consists of all strings over $\{a,b\}$ with an even number of $a$'s
+  and an odd number of $b$'s. Use Algorithm 6.2.2 to construct a
+  regular expression L(M). Exercise 2.38 requested a nonalgorithmic
+  construction of a regular expression for this language, which, as
+  you now see, is a formidable task. \\ \\
+
+  M:
+  \begin{center}
+    \begin{tikzpicture}[shorten >= 1pt, node distance = 3cm, auto]
+      \node[state] (q0) {$[e_a,e_b]$};  %starting node
+      \draw (q0.west) -- ++(-3mm,3mm);
+      \draw (q0.west) -- ++(-3mm,-3mm);
+      \node[state] (q1) [below of=q0] {$[o_a,e_b]$};
+      \node[state] (q2) [right of=q1] {$[o_a,o_b]$};
+      \node[state,accepting] (q3) [right of=q0] {$[e_a,o_b]$};
+ 
+      \path[->] ([xshift=1ex]q0.south) edge node {a} ([xshift=1ex,yshift=-0.5ex]q1.north)
+                ([yshift=1ex]q0.east) edge node {b} ([yshift=1ex]q3.west)
+                ([xshift=-1ex]q1.north) edge node {a} ([xshift=-1ex]q0.south)
+                ([yshift=1ex]q1.east) edge node {b} ([yshift=1ex]q2.west)
+                ([yshift=-1ex]q2.west) edge node {b} ([yshift=-1ex]q1.east)
+                ([xshift=-1ex]q2.north) edge node {a} ([xshift=-1ex]q3.south)
+                ([xshift=1ex]q3.south) edge node {a} ([xshift=1ex]q2.north)
+                ([yshift=-1ex]q3.west) edge node {b} ([yshift=-1ex]q0.east);
+              \end{tikzpicture}
+            \end{center}
+
+     We begin by deleting state $[o_a, e_b]$, or $q_1$. Following the
+     algorithm, we obtain the following replacement transitions:
+     \begin{tabular}{c|c}
+       \hline
+       $q_0\rightarrow q_1 \rightarrow q_2$ & $q_o
+                                              \xrightarrow[ab(bb)^{\star}a                                             
+      
+
+  
+
+\item \textbf{6.4} (p. 217) Let G be the grammar
+  \begin{align*}
+    G: S \rightarrow \text{ }& aS\text{ $\vert$ }bA\text{ $\vert$ }a \\
+    A \rightarrow \text{ }& aS\text{ $\vert$ }bA\text{ $\vert$ }b. \\
+  \end{align*}
+  \begin{enumerate}
+  \item Use Theorem 6.3.1 to build an NFA M that accepts L(G).    
+  \item Using the result of part (a), build a DFA M$'$ that accepts L(G).
+  \item Construct a regular grammar from M that generates L(M).
+  \item Construct a regular grammar from M$'$ that generates L(M$'$).
+  \item Give a regular expression for L(G).
+  \end{enumerate}
+
+\item \textbf{6.14.d} (p. 218)
+
+\item \textbf{7.1} (p. 247)
+  
+\end{enumerate}
 
 \begin{enumerate}
 
@@ -291,9 +421,7 @@ From here, we can draw the state diagram:
                       (q2q1) edge node {c} (q1)
                       (q2q1) edge node {a} (qe)
                       (q1) edge [loop right] node {c} (q1)
-                      (q1) edge node {a,b} (qe)
-                      (qe) edge [loop above, draw=red] node
-                      {\textcolor{red}{a,b,c}} (qe); % missed in original hw :(
+                      (q1) edge node {a,b} (qe);
                     \end{tikzpicture}      
                   \end{center}
                 \end{enumerate}

@@ -1,0 +1,64 @@
+* Notes for CS 3431 9-25-17 
+
+** Prof gave solutions for Project 1, didn't look different from ours but I don't think we really nailed it either
+
+** Gave additional info on triggers that was missed last time:
+
+*** If we have multiple before and after statement- and row-level triggers, the order in which they are run is:
+Before (Statement-Level) -> Before(Row-Level) -> Event (Row-Level) -> After (Row-Level) -> After(Statement-Level)
+
+*** Instead Of Trigger: 
+
+**** Used only for views
+
+**** Called Instead Of because they fire the trigger INSTEAD OF executing whatever statement fired the trigger
+CREATE [or REPLACE] Trigger <name>
+INSTEAD OF Insert [or] | Update [or] | Delete
+[OR <attribute> ...]
+ON <tablename>
+
+** Cursors and Stored Triggers
+
+*** SELECT can be used inside triggers.
+
+*** For SELECT statement, each column selected from is stored in a declared temp variable:
+CREATE TRIGGER ...
+BEFORE INSERT ON ...
+FOR EACH ROW
+DECLARE
+   temp <vartype>;
+   temp2 <vartype>;
+   ...
+BEGIN 
+   SELECT col1,col2, ... INTO temp,temp2, ... FROM dual WHERE ...
+END;
+
+*** Cursors are mechanisms to navigate tuple-by-tuple over a relation
+
+**** typically used inside triggers, stored procedures and stored functions
+
+***** When we execute a query, a relation is returned
+
+***** It is stored in private work area for the query
+
+***** Cursor is a pointer to this area
+
+***** Move the cursor to navigate over the tuples
+
+CURSOR <name> IS <SQL Query ...>;
+
+**** Cursor operations are:
+CREATE <cursor>
+OPEN <cursor>
+FETCH <cursor> INTO <variable>
+CLOSE <cursor>
+
+**** Cursor attributes for cursor C1 are:
+C1%ROWCOUNT -- number of tuples
+C1%FOUND -- TRUE if last fetch was successful
+C1%NOTFOUND -- TRUE if last fetch was not successful
+C1%ISOPEN -- TRUE if C1 is open
+**** These are mainly used as predicates
+**** Cursors are usually applied in FOR loops
+**** Cursors can be parameterized in order to customize their execution each time:
+CURSOR <cursorname> (param1) IS ...

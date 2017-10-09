@@ -1,10 +1,10 @@
 (TeX-add-style-hook
- "Homework_3"
+ "Homework_4"
  (lambda ()
    (TeX-add-to-alist 'LaTeX-provided-class-options
                      '(("article" "12pt")))
    (TeX-add-to-alist 'LaTeX-provided-package-options
-                     '(("geometry" "left=1in" "right=1in" "top=1in" "bottom=1in")))
+                     '(("geometry" "margin=1in")))
    (TeX-run-style-hooks
     "latex2e"
     "article"
@@ -14,7 +14,6 @@
     "amssymb"
     "bm"
     "tikz"
-    "mathtools"
-    "color"))
+    "mathtools"))
  :latex)
 
