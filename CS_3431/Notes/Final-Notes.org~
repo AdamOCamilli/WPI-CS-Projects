@@ -1,0 +1,11 @@
+* Notes On Final Exam
+** Prof says Normalization question takes the longest and is the question students tend to lose the most points on
+** Prof recommends we copy full JDBC program onto notes sheet
+
+** MUST practice R(ABCDE) problem shoiulkd
+
+** For Constraints -> Know how to do domain value-checks (between 1 and 1000, for example)
+
+** Make sure how to deal null values and concatenations
+
+** Know how to create efficient queries (Select, Project, then Join -> Pi, Sigma, then Bowtie)

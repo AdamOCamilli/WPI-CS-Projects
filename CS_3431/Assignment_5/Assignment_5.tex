@@ -1,0 +1,197 @@
+\documentclass[12pt]{article}
+
+\usepackage[margin = 1in]{geometry}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{bm}
+\usepackage{tikz}
+
+\begin{document}
+
+\title{CS 3431: Assignment 5}
+\author{Adam Camilli}
+\date{\today}
+
+\maketitle
+
+\begin{enumerate}
+\item For the relational schema given below and its corresponding functional dependencies (FDs):
+  \begin{itemize}
+  \item R(A, B, C, D, E)
+  \item S = \{AB $\to$ E\} \\ 
+          \hspace*{0.7cm} \{B $\to$ C\} \\ 
+          \hspace*{0.7cm} \{B $\to$ D\} \\ 
+          \hspace*{0.7cm} \{CE $\to$ A\}
+  \end{itemize}
+  answer the following questions:
+  \begin{enumerate}
+  \item Find all candidate keys of the relation R through an exhaustive set of attribute closures. Note when an attribute set closure is trivial. \\ 
+    \begin{tabular}[t]{|c|c||c|c||c|c|}
+      \hline
+      \textbf{Set} & \textbf{Closure} & \textbf{Set} & \textbf{Closure} & \textbf{Set} & \textbf{Closure} \\
+      \hline
+      A & Trivial & AB & ABCDE & BD & BCD \\
+      \hline
+      B & BCD & AC & Trivial & BE & ABCDE \\ 
+      \hline
+      C & Trivial & AD & Trivial & CD & Trivial \\
+      \hline
+      D & Trivial & AE & Trivial & CE & ACE \\
+      \hline
+      E & Trivial & BC & BCD & DE & Trivial \\
+      \hline
+      \hline
+      ABC & ABCDE & ADE & Trivial & ABCE & ABCDE \\
+      \hline
+      ABD & ABCDE & BCD & Trivial & ACDE & Trivial\\
+      \hline
+      ABE & ABCDE & BCE & Trivial & BCDE & ABCDE\\
+      \hline
+      ACD & Trivial & CDE & ACDE & &\\
+      \hline
+      ACE & Trivial & ABCD & ABCDE & & \\
+      \hline
+    \end{tabular}    
+    \\ \\
+    Candidate Keys = \{AB,BE\}
+  \item Assume that S is a minimal basis for R. List the dependencies that violate 3NF, if any. \\ \\
+    \begin{align*}
+      \text{B } &\to \text{ C \hspace{1.5 cm}(C } \not\subset \text{ B, and B } \not\in \text{ Super Keys.)} \\
+      \text{B } &\to \text{ D \hspace{1.5 cm}(D } \not\subset \text{ B, and B } \not\in \text{ Super Keys.)} \\
+    \end{align*}
+    
+    \newpage
+    
+  \item If R is NOT in 3NF, decompose it into multiple relations that are in 3NF.
+    \begin{align*}
+      B \to C, B \to D &: \hspace{1cm} \textrm{R1}(B,C,D), \textrm{  }S=\{B \to C, B \to D\} \\
+      AB \to E &: \hspace{1cm} \textrm{R2}(A,B,E),\textrm{  } S=\{AB \to E\} \\
+      CE \to A &: \hspace{1cm} \textrm{R3}(A,C,E), \textrm{  } S=\{CE \to A\} \\
+    \end{align*}
+
+  \item List the dependencies, in the order given in S, that violate BCNF. 
+    \begin{align*}
+      B &\to C \\
+      B &\to D \\
+      CE &\to A \\
+    \end{align*}
+    
+  \item If R is not in BCNF, provide decomposition into multiple relations where each one is in BCNF. For each decomposition step, use the first FD violation following the FD order given in S. For example, if AB $\to$ E and B $\to$ C are in BCNF but the other two FDs are in violation, then you would use B $\to$ D for the decomposition. Make sure to specify which FD is used to make the decomposition. \\ \\
+      Using B $\to$ C to decompose: \\
+      $\text{B}^+$ = BCD, R1 = (BCD), R2 = (ABE) \\ \\
+      \begin{align*}
+      \textrm{R1: S = \{B $\to$ C, B $\to$ D\}} & \textrm{ No Violation}\\
+      \textrm{R2: S = \{AB $\to$ E, B $\to$ E\}} & \textrm{ B $\to$ E violates BCNF $\Rightarrow$ R3(ACE), R4(BCD), R5(BE) }\\
+      \textrm{Only examine R3: S = \{CE $\to$ A\}} & \textrm{ No Violation} 
+      \end{align*}
+      \begin{align*}
+        (BCD)\text{, } & S = \{B\to C, B \to D\} \\
+        (ABE)\text{, } & S = \{AB \to E\} \\
+        (ACE)\text{, } & S = \{CE \to A\} \\
+      \end{align*}
+  \end{enumerate}
+
+\newpage
+
+\item For the relational schema given below and its corresponding functional dependencies (FDs):
+  \begin{itemize}
+  \item R(A, B, C, D, E)
+  \item S = \{B $\to$ A\} \\ 
+          \hspace*{0.7cm} \{B $\to$ E\} \\ 
+          \hspace*{0.7cm} \{CE $\to$ D\} \\ 
+          \hspace*{0.7cm} \{D $\to$ B\}
+  \end{itemize}
+  answer the following questions:
+  \begin{enumerate}
+    \item Find all candidate keys of the relation R through an exhaustive set of attribute closures. Note when an attribute set closure is trivial. \\ 
+    \begin{tabular}[t]{|c|c||c|c||c|c|}
+      \hline
+      \textbf{Set} & \textbf{Closure} & \textbf{Set} & \textbf{Closure} & \textbf{Set} & \textbf{Closure} \\
+      \hline
+      A & Trivial & AB & ABE & BD & ABDE \\
+      \hline
+      B & ABE & AC & Trivial & BE & ABE \\ 
+      \hline
+      C & Trivial & AD & ABDE & CD & ABCDE \\
+      \hline
+      D & ABDE & AE & Trivial & CE & ABCDE \\
+      \hline
+      E & Trivial & BC & ABCDE & DE & ABDE \\
+      \hline
+      \hline
+      ABC & ABCDE & ADE & ABDE & ABCE & ABCDE \\
+      \hline
+      ABD & ABDE & BCD & ABCDE & ACDE & ABCDE \\
+      \hline
+      ABE & trivial & BCE & ABCDE & ABCD & ABCDE \\
+      \hline
+      ACD & ABCDE & CDE & ABCDE & BCDE & ABCDE\\
+      \hline
+      ACE & ABCDE & ABCD & ABCDE & & \\
+      \hline
+    \end{tabular}    
+    \\ \\
+    Candidate Keys = \{BD,CD,CE\}
+  \item Decompose the relations to satisfy BCNF. Specify which FD is used to make the decomposition. If there is multi-step decomposition, then indicate each step along with which FD is used for the decomposition. \\ \\
+    Using B $to$ A: 
+    \begin{align*}
+      \text{R1(ABE)} & \text{S = \{B $\to$ A, B $\to$ E\}} \\
+      \text{R2(BD)} & \text{S = \{D $\to$ B\}} \\
+      \text{R3(CD)} & \text{S = \{None\}} \\
+    \end{align*}
+    Here we can see that the FD (CE $\to$ D) is lost. Since we see later that the FDs given to us are already the minimal basis, we can use the results given in the next question to answer this question as well (i.e., the decompositions turn out to be the same).
+
+    \newpage
+
+  \item List the dependencies, in the order given in S, that violate BCNF. 
+    \begin{align*}
+      B &\to A \\
+      B &\to E \\
+      D &\to B \\
+    \end{align*}
+  
+  \item If the FDs are not in 3NF, calculate a minimal basis for the FDs and decompose the relations to satisfy 3NF. \\ \\
+        Minimal Basis = \{B $\to$ A, B $\to$ E, D $\to$ B, CE $\to$ D\} = S. 
+    \begin{align*}
+      \text{R1(ABE), } & \text{ S = \{B $\to$ A, B $\to$ E\}} \\
+      \text{R2(BD), } & \text{ S = \{D $\to$ B\}} \\
+      \text{R3(CDE), } & \text{ S = \{CE $\to$ D\}} \\
+    \end{align*}
+  \item If R is NOT in 3NF, decompose it into multiple relations that are in 3NF.
+    \begin{align*}
+      B \to C, B \to D &: \hspace{1cm} \textrm{R1}(B,C,D), \textrm{  }S=\{B \to C, B \to D\} \\
+      AB \to E &: \hspace{1cm} \textrm{R2}(A,B,E),\textrm{  } S=\{AB \to E\} \\
+      CE \to A &: \hspace{1cm} \textrm{R3}(A,C,E), \textrm{  } S=\{CE \to A\} \\
+    \end{align*}
+  \end{enumerate}
+
+\newpage
+
+\item Answer the questions using the table.
+  \begin{enumerate}
+  \item Indicate whether each of the following decompositions is Lossy or Lossless and state why? 
+    \begin{enumerate}
+    \item Artist and Artwork are in one relation. Gallery, Address, and Artwork are in the other relation. \\ \\
+      LOSSLESS: Since the artwork is present in both relations, artists will always match with the correct gallery and address and no information will be lost. 
+      
+    \item Gallery, Address, and Artwork are in one relation. Artist and Gallery are in one relation. \\ \\
+      LOSSY: Although the table does not show it, presumably a single artist should be able to have more than one artwork at a gallery. In this case, information is lost in the second relation. Every time you get a certain Artist and Gallery it won't necessarily be the same Artwork. As the table is, however, this is lossless.
+      
+    \end{enumerate}
+  \item From the data in the table above, identify the set of functional dependencies that hold. Then, specify which of the following decompositions preserve the dependencies and state why? \\ \\
+    Artist $\to$ Artwork \\
+    Gallery $\to$ Address \\
+    Artwork, Gallery, Address $\to$ Artist \\
+    Artist, Artwork $\to$ Gallery \\
+    Artist, Artwork $\to$ Address \\
+    \begin{enumerate}
+    \item Gallery, Address, and Artist are in one relation. Artwork and Artist are in the other relation. \\ \\
+      Does not preserve all the dependencies because (Artist, Artwork) is not a super key.
+    \item Gallery, Artist are in one relation. Artwork, Artist, and Address are in the other relation. \\ \\ 
+    \end{enumerate}
+  \end{enumerate}
+
+\end{enumerate}
+
+\end{document}
