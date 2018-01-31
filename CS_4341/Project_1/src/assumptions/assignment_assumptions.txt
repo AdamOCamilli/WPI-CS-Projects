@@ -1,4 +1,3 @@
-"""
 Our assumptions for how Gomoku is played for the purposes of this project are the following:
 
 1) The game sequence is as follows (from assignment description):
@@ -16,7 +15,7 @@ Our assumptions for how Gomoku is played for the purposes of this project are th
     4. After that, players 1 and 2 take turns making moves until the game ends with one player winning 
         or a tie. There is a 10 second time limit for a player to make its move.
         
-    5. 
+    5. Game board is 15x15
         
 2) The program must utilize the Minimax algorithm with alpha-beta pruning, with our choice of utility function.
 
@@ -37,26 +36,35 @@ Our assumptions for how Gomoku is played for the purposes of this project are th
         4) A player makes a move out-of-order (Loses)
         5) Board is full (Tie)
     
-    2. Game is played via the following process:
-        1) Both programs check if end_game exists (it does not at start)
-        2) Randomly selected player (P1) writes its first move into move_file
-        3) Ref checks if an end condition is met, if yes creates end_game (REFCHECK)
-        3) Non-selected player (P2) decides whether or not to change stone color
-        4) P2 checks if end_game exists (P2CHECK) 
-        5) P2 reads move_file, decides on a move, then overwrites move_file with their move (P2GOES)
+    2. Game is played in practice via the following process:
+        1) Both programs check if end_game or their .go file exists
+        2) Randomly selected player (P1) writes its first move to P1.go after checking for end game (P1CHECK -> P1GOES)
+        3) Ref reads both .go file, checks if an end condition is met, if yes creates end_game, otherwise makes other .go file (REFCHECK)
+        3) P2 checks if end_game exists (P2CHECK)
+        4) Non-selected player (P2) decides whether or not to change stone color
+        5) P2 reads move_file, decides on a move, then writes it to its .go file (P2GOES)
         5) REFCHECK
-        6) P1 checks if end_game exists (P1CHECK) 
-        7) P1 reads move_file, decides on a move and overwrites move_file (P1GOES)
+        6) P1CHECK
+        7) P1GOES
         8) REFCHECK
         9) P2CHECK
         10) P2GOES
         11) REFCHECK
         12) P1CHECK
         13) P1GOES
-        ....
-        REFCHECK creates end_game
-        P1 and P2 read end_game to learn result
+        ...
+        ...
+        N)   REFCHECK creates end_game
+        N+1) P1 and P2 read end_game to learn result
     
-    3. Referee
+    3. Referee code is provided at <https://github.com/samogden/WPI.CS4341>
+ 
+	4. Moves are written to move_file in the following format: 
+		"<Group Name> <Column> <Row>"
+		where columns are <A-O> and rows are <1-15>, and move is on one line.
+		Example: "Group1 E 5"
 
-"""
+5)
+		
+	   
+

@@ -1,0 +1,4 @@
+BOARD HEIGHT 	= 	15
+BOARD WIDTH 	=	15
+TURN TIME		=	10 sec
+ 
