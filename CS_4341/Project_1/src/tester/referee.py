@@ -23,7 +23,6 @@ turn_length_in_seconds = 10
 
 move_file_name = "move_file"
 
-
 class GomokuBoard(object):
     class _SingleField(object):
         isEmpty = True
