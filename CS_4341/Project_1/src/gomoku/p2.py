@@ -44,7 +44,7 @@ class Player(object):
     def valid_move(self,row,col):
         if (DEBUG and self.board[row][col] == FREE_SPOT_SYMBOL):
             self.display_board()
-            print("I say that " + str(row) + "," + str(col))
+            print("I say that " + str(row) + "," + str(col) + " is valid.")
         return (self.board[row][col] == FREE_SPOT_SYMBOL)
     
     ''' Returns the best move on the current board based on the player's chosen strategy
@@ -90,18 +90,18 @@ class Player(object):
     def display_board(self):
         if (VERBOSE):
             print(self.name + "'s board")
-        print("   ", end = " ")
+        print("   ", end = "")
         for i in range(0,BOARD_HEIGHT):
-            print(ALPHABET[i], end = "  ")
+            print(ALPHABET[i], end = " ")
         print()
         
         for i in range(0,BOARD_HEIGHT):
             if (i >= 9): # Note index 9 corresponds to 10 when marking rows
-                print(i+1, end = "  ")
+                print(i+1, end = " ")
             else:
-                print(" " + str(i+1), end = "  ")
+                print(" " + str(i+1), end = " ")
             for j in range(0, BOARD_WIDTH):
-                print(self.board[i][j], end = "  ")
+                print(self.board[i][j], end = " ")
             print()
             
     def is_our_turn(self):
@@ -150,7 +150,7 @@ class Player(object):
                 self.update_board(our_move[0], our_move[1], True)
                 # Write our move to .go file
                 # + 1 since array is 0-14 while board is labled 1-15
-                write_string = self.name + " " + ALPHABET[our_move[0]]+ " " + str(our_move[1] + 1)
+                write_string = self.name + " " + ALPHABET[our_move[1]].upper() + " "+ str(our_move[0] + 1)
                 move_fid.write(write_string)
                 if (VERBOSE):
                     print(self.name + ": " + write_string)
@@ -161,24 +161,26 @@ class Player(object):
                 move_fid = open(self.move_file, "r")
                 # If move_file is not empty, we must interpret it, since it contains the opponent's last move
                 tokens = move_fid.read().split()        # Tokenize line by whitespace to get (<opponent>, <col>, <row>)
+                # Order from move_file is somewhat arbitrary (I believe it changes based on player's implementation)
+                # So we have to consider both cases where it is <teamname> <col> <row> and <teamname> <row> <col>
                 if tokens[1].upper() in ALPHABET:
                     row = int(tokens[2])
                     col = ALPHABET.find(tokens[1].upper())
                 else:
                     row = int(tokens[1])
-                    col = ALPHABET.find(tokens[2]).upper()       
+                    col = ALPHABET.find(tokens[2].upper())     
                 # Update our board to reflect opponent's move if it exists
                 # - 1 to account for rows being counted from 0 in actual self.board array
                 self.update_board(row - 1, col, False)
                 if (VERBOSE):
-                    print(self.name + ": Noticed " + tokens[0] + " made move " + tokens[1].upper() + " " + tokens[2])
+                    print(self.name + ": Noticed " + tokens[0] + " made move " + ALPHABET[col].upper() + " " + str(row))
                 move_fid.close()
                 move_fid = open(self.move_file, "w")
                 # Make our own move
                 our_move = self.evaluate()
                 self.update_board(our_move[0], our_move[1], True)
-                # Write our move to move file
-                write_string = self.name + " " + ALPHABET[our_move[0]]+ " " + str(our_move[1] + 1)
+                # Write our move to move file: <teamname> <col> <row>
+                write_string = self.name + " " + ALPHABET[our_move[1]].upper() + " " + str(our_move[0] + 1)
                 move_fid.write(write_string)
                 if (VERBOSE):
                     print(self.name + ": " + write_string)
