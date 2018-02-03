@@ -9,6 +9,8 @@ import random
 import traceback
 import time
 import sys
+import copy
+from state import State
 
 MAX_TURN_TIME = 10
 BOARD_HEIGHT = 15
@@ -263,6 +265,24 @@ def minimax(node, depth, heuristic, maximize):
             bestValue = min(bestValue,value)
         return bestValue
 
+def minimax2(board):
+    print('running minimax')
+    boardCopy = copy.deepcopy(board)
+    for i in range(0, 15):
+        for j in range(0, 15):
+            if boardCopy[i][j] == FREE_SPOT_SYMBOL:
+                boardCopy[i][j] = 0
+            elif boardCopy[i][j] == 'x':
+                boardCopy[i][j] = 1
+            else:
+                boardCopy[i][j] = -1
+    state = State(boardCopy)
+    state.findChildren(1,1,-99999,99999)
+    bestState = state.children[0]
+    for s in state.children:
+        if s.value > bestState.value:
+            bestState = s
+    return [bestState.yMove, bestState.xMove]
 
 
 '''
@@ -270,7 +290,7 @@ def minimax(node, depth, heuristic, maximize):
 ------------------------Main-------------------------
 -----------------------------------------------------
 '''
-p1 = Player("p1",random_strategy)
+p1 = Player("p1",minimax2)
 while (not os.path.isfile("end_game")):
     print(p1.name + ": Waiting for turn...")
     while(not os.path.isfile("p1.go")):

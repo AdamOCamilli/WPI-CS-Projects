@@ -38,11 +38,11 @@ Our assumptions for how Gomoku is played for the purposes of this project are th
     
     2. Game is played in practice via the following process:
         1) Both programs check if end_game or their .go file exists
-        2) Randomly selected player (P1) writes its first move to P1.go after checking for end game (P1CHECK -> P1GOES)
+        2) Randomly selected player (P1) writes its first move to move file after checking for end game (P1CHECK -> P1GOES)
         3) Ref reads both .go file, checks if an end condition is met, if yes creates end_game, otherwise makes other .go file (REFCHECK)
         3) P2 checks if end_game exists (P2CHECK)
         4) Non-selected player (P2) decides whether or not to change stone color
-        5) P2 reads move_file, decides on a move, then writes it to its .go file (P2GOES)
+        5) P2 reads move_file, decides on a move, then writes it to its move file (P2GOES)
         5) REFCHECK
         6) P1CHECK
         7) P1GOES

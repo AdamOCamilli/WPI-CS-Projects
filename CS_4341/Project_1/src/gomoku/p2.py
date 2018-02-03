@@ -9,6 +9,8 @@ import random
 import traceback
 import time
 import sys
+import copy
+from state import State
 
 MAX_TURN_TIME = 10
 BOARD_HEIGHT = 15
@@ -40,13 +42,13 @@ class Player(object):
         self.end_game = "end_game"
         self.move_file = "move_file"
         self.play_file = self.name
-    
+
     def valid_move(self,row,col):
         if (DEBUG and self.board[row][col] == FREE_SPOT_SYMBOL):
             self.display_board()
-            print("I say that " + str(row) + "," + str(col) + " is valid.")
+            print("I say that " + str(row) + "," + str(col) + " is valid")
         return (self.board[row][col] == FREE_SPOT_SYMBOL)
-    
+
     ''' Returns the best move on the current board based on the player's chosen strategy
     @return: (row,col) of strategical move 
     @return: -1 if strategy function throws exception
@@ -62,13 +64,13 @@ class Player(object):
             print("ERROR: Stategy function for player " + self.name + " not correctly implemented.")
             traceback.print_exc()
             return -1
-            
+
     ''' Updates the board with a given move 
     @param row: Row where move was made
     @param col: Column where move was made
     @param is_our_move: Whether or not this is the player's move 
     @return: True if move successful, false if not
-    '''   
+    '''
     def update_board(self, row, col, is_our_move):
         if (self.valid_move(row,col)):
             if (is_our_move):
@@ -78,7 +80,7 @@ class Player(object):
             return True
         else:
             return False
-            
+
     ''' Resets board (i.e. populates entire board array with FREE_SPOT_SYMBOL)
     '''
     def reset_board(self):
@@ -94,7 +96,7 @@ class Player(object):
         for i in range(0,BOARD_HEIGHT):
             print(ALPHABET[i], end = " ")
         print()
-        
+
         for i in range(0,BOARD_HEIGHT):
             if (i >= 9): # Note index 9 corresponds to 10 when marking rows
                 print(i+1, end = " ")
@@ -103,12 +105,12 @@ class Player(object):
             for j in range(0, BOARD_WIDTH):
                 print(self.board[i][j], end = " ")
             print()
-            
+
     def is_our_turn(self):
         return os.path.isfile(self.play_file + ".go")
     def game_over(self):
         return os.path.isfile(self.end_game)
-    
+
     '''
     This function handles the following actions associated with taking a turn in Gomoku:
         1) Checks if end_game exists, if so prints its contents and exits
@@ -135,11 +137,11 @@ class Player(object):
                 print("ERROR: end_game detected but couldn't open it")
                 traceback.print_exc()
                 return -1
-        
+
         # Check if it is not our turn
         if (not self.is_our_turn()):
             return 1
-        
+
         # All good, make our move
         # Inspect move_file for opponent's last move
         try:
@@ -150,7 +152,8 @@ class Player(object):
                 self.update_board(our_move[0], our_move[1], True)
                 # Write our move to .go file
                 # + 1 since array is 0-14 while board is labled 1-15
-                write_string = self.name + " " + ALPHABET[our_move[1]].upper() + " "+ str(our_move[0] + 1)
+                # Order is <col> <row> for output
+                write_string = self.name + " " + ALPHABET[our_move[1]].upper() + " " + str(our_move[0] + 1)
                 move_fid.write(write_string)
                 if (VERBOSE):
                     print(self.name + ": " + write_string)
@@ -168,7 +171,7 @@ class Player(object):
                     col = ALPHABET.find(tokens[1].upper())
                 else:
                     row = int(tokens[1])
-                    col = ALPHABET.find(tokens[2].upper())     
+                    col = ALPHABET.find(tokens[2].upper())
                 # Update our board to reflect opponent's move if it exists
                 # - 1 to account for rows being counted from 0 in actual self.board array
                 self.update_board(row - 1, col, False)
@@ -214,22 +217,22 @@ class Node(object):
     def __init__(self, children, value):
         self.children = children
         self.value = value
-    
+
     def is_terminal(self):
         return self.children == None
-    
+
     def depth(self):
         if (self.is_terminal()):
             return 1
         else:
             return 1 + self.children[0].depth()
-            
+
 '''
 -----------------------------------------------------
 ----------------------Stategies----------------------
 -----------------------------------------------------
 '''
-                
+
 ''' Placeholder for real strategies, simply goes with first random non-filled spot on board
 '''
 def random_strategy(board):
@@ -240,7 +243,7 @@ def random_strategy(board):
             print("Chilling in random loop")
         row = random.randint(0, BOARD_HEIGHT - 1)
         col = random.randint(0, BOARD_WIDTH - 1)
-        
+
     return [row,col]
 
 def minimax(node, depth, heuristic, maximize):
@@ -248,35 +251,58 @@ def minimax(node, depth, heuristic, maximize):
         return heuristic(node)
     else:
         print(node.value)
-    
+
     if (maximize):
         bestValue = -(sys.maxsize) - 1
         for child in node.children:
             value = minimax(child, depth - 1, heuristic, False)
             bestValue = max(bestValue,value)
         return bestValue
-    else: 
+    else:
         bestValue = sys.maxsize
         for child in node.children:
             value = minimax(child, depth - 1, heuristic, True)
             bestValue = min(bestValue,value)
         return bestValue
+
+def minimax2(board):
+    boardCopy = copy.deepcopy(board)
+    for i in range(0,15):
+        for j in range(0,15):
+            if boardCopy[i][j] == FREE_SPOT_SYMBOL:
+                boardCopy[i][j] = 0
+            elif boardCopy[i][j] == 'x':
+                boardCopy[i][j] = 1
+            else:
+                boardCopy[i][j] = -1
+    state = State(boardCopy)
+    state.findChildren(1,1,-99999,99999)
+    bestState = state.children[0]
+    for s in state.children:
+        if s.value > bestState.value:
+            bestState = s
+    return [bestState.yMove, bestState.xMove]
+
+
 '''
 -----------------------------------------------------
 ------------------------Main-------------------------
 -----------------------------------------------------
 '''
-
-p2 = Player("p2",random_strategy)
+p1 = Player("p2",random_strategy)
 while (not os.path.isfile("end_game")):
-    print(p2.name + ": Waiting for turn...")
-    while (not os.path.isfile("p2.go")):
-        time.sleep(0.25)
+    print(p1.name + ": Waiting for turn...")
+    while(not os.path.isfile("p2.go")):
+        time.sleep(0.5)
     #print(os.listdir("."))
     print("p2: taking turn")
-    p2.play()
-    time.sleep(0.25)
-    #os.remove(p2.play_file)
+    p1.play()
+    time.sleep(0.5)
+    # Need to allow referee to clear .go file
+    #os.remove(p1.play_file)
+
+
+
 
 
 '''
