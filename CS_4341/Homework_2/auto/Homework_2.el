@@ -13,6 +13,8 @@
     "amssymb"
     "enumitem"
     "graphicx"
-    "array"))
+    "array"
+    "bm"
+    "tikz"))
  :latex)
 

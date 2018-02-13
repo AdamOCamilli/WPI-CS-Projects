@@ -426,25 +426,6 @@ def random_strategy(board):
 
     return [row,col]
 
-def minimax(node, depth, heuristic, maximize):
-    if (depth == 0 or node.is_terminal()):
-        return heuristic(node)
-    else:
-        print(node.value)
-
-    if (maximize):
-        bestValue = -(sys.maxsize) - 1
-        for child in node.children:
-            value = minimax(child, depth - 1, heuristic, False)
-            bestValue = max(bestValue,value)
-        return bestValue
-    else:
-        bestValue = sys.maxsize
-        for child in node.children:
-            value = minimax(child, depth - 1, heuristic, True)
-            bestValue = min(bestValue,value)
-        return bestValue
-
 def minimax2(board):
     print('running minimax')
     boardCopy = copy.deepcopy(board)
@@ -452,7 +433,7 @@ def minimax2(board):
         for j in range(0, 15):
             if boardCopy[i][j] == FREE_SPOT_SYMBOL:
                 boardCopy[i][j] = 0
-            elif boardCopy[i][j] == 'x':
+            elif boardCopy[i][j] == 'X':
                 boardCopy[i][j] = 1
             else:
                 boardCopy[i][j] = -1
@@ -471,13 +452,13 @@ def minimax2(board):
 ------------------------Main-------------------------
 -----------------------------------------------------
 '''
-p1 = Player("p1", random_strategy)
+p1 = Player("G2", minimax2)
 while (not os.path.isfile("end_game")):
     print(p1.name + ": Waiting for turn...")
-    while(not os.path.isfile("p1.go")):
+    while(not os.path.isfile("gosunmoku.go")):
         time.sleep(0.5)
     #print(os.listdir("."))
-    print("p1: taking turn")
+    print("gosunmoku: taking turn")
     p1.play()
     time.sleep(0.5)
     # Need to allow referee to clear .go file
