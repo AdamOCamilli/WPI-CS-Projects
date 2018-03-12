@@ -1,0 +1,25 @@
+"D:\CS4341 Intro to Artificial Intelligence\python projects\venv\Scripts\python.exe" "D:/CS4341 Intro to Artificial Intelligence/project1/Project_2/template.py"
+Using TensorFlow backend.
+Train on 3895 samples, validate on 978 samples
+Epoch 1/5
+2018-02-24 12:31:35.542645: I C:\tf_jenkins\workspace\rel-win\M\windows\PY\36\tensorflow\core\platform\cpu_feature_guard.cc:137] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX AVX2
+
+ 512/3895 [==>...........................] - ETA: 1s - loss: 2.3271 - acc: 0.0938
+3895/3895 [==============================] - 0s 78us/step - loss: 2.2783 - acc: 0.1184 - val_loss: 2.2267 - val_acc: 0.1626
+Epoch 2/5
+
+ 512/3895 [==>...........................] - ETA: 0s - loss: 2.2280 - acc: 0.1562
+3895/3895 [==============================] - 0s 14us/step - loss: 2.1905 - acc: 0.1797 - val_loss: 2.1357 - val_acc: 0.2086
+Epoch 3/5
+
+ 512/3895 [==>...........................] - ETA: 0s - loss: 2.1218 - acc: 0.2031
+3895/3895 [==============================] - 0s 14us/step - loss: 2.0906 - acc: 0.2306 - val_loss: 2.0285 - val_acc: 0.2515
+Epoch 4/5
+
+ 512/3895 [==>...........................] - ETA: 0s - loss: 2.0367 - acc: 0.2617
+3895/3895 [==============================] - 0s 14us/step - loss: 1.9670 - acc: 0.2878 - val_loss: 1.9045 - val_acc: 0.3078
+Epoch 5/5
+
+ 512/3895 [==>...........................] - ETA: 0s - loss: 1.9365 - acc: 0.2988
+3895/3895 [==============================] - 0s 13us/step - loss: 1.8472 - acc: 0.3641 - val_loss: 1.7977 - val_acc: 0.3763
+{'val_loss': [2.2266920324727315, 2.1357272114978003, 2.0284856652920964, 1.904479141859433, 1.7976977561880474], 'val_acc': [0.16257668710132805, 0.20858895703616928, 0.2515337418361066, 0.307770962821194, 0.3762781157754438], 'loss': [2.278282337959985, 2.190471786528405, 2.090629010390256, 1.9670274906195173, 1.8471584382810091], 'acc': [0.11835686776007553, 0.17971758695178222, 0.23055198938610924, 0.2878048770234888, 0.3640564827313013]}
