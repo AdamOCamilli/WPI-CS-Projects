@@ -1,0 +1,70 @@
+/* 'rm' - A transparent replacement of /bin/rm which moves file(s) to the user's dumpster directory 
+   located at '~/.dumpster'
+   
+   It does not replace /bin/rm, but rather appears first in the /bin/ path so as to be called first.
+   It performs one of two actions:
+       1) If the file is not on the same partition as the dumpster directory, the file is moved.
+       2) If the file is on the same partitiona as the dumpster directory, it is hard-linked (renamed)
+   If a file is already contained within the dumpster, it is given extenstion '.[num]', where [num] is
+   [1-9].
+
+   All file permissions, including access times, are preserved.
+
+   The following options are supported:
+       -f : Force a complete remove, i.e. default linux 'rm' or 'rm -r' process
+       -h : Display help and use message
+       -r : Remove directories recursively (copy to dumpster)
+
+   Returns 0 upon success, 1 upon pre-failure, -1 upon bug failure
+
+   Author: Adam Camilli (aocamilli@wpi.edu)
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include <sys/types.h>
+#include <assert.h>
+
+/* Official name of program */
+#define PROGRAM_NAME "rm"
+
+/* Print various helpful debug messages */
+#define DEBUG true
+
+void print_help() {
+  printf("Usage: rm [options] [files]\n");
+}
+
+int main(int argc, char** argv) {
+  // First check environment variable is set
+  DUMPSTER = getenv("DUMPSTER");
+  if (DUMPSTER == NULL)
+    return 1;
+  if (argc <= 1) {
+    print_help();
+    printf("Must pass at least one file");
+    return 1;
+  }
+    
+
+  // Parse any options called with rm
+  int opt;
+  while ((opt = getopt (argc, argv, "f:h:r:")) != -1) {
+    switch (opt) {
+      case 'h':
+	print_help();
+	return 0;
+ 	break;
+      case 'f':
+        // Call real rm ...
+	break;
+      case 'r':
+        // Set up recursion ...
+	break;
+    }
+  }
+
+  
+  
+}
