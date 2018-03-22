@@ -19,32 +19,28 @@
    Returns 0 upon success, 1 upon pre-failure, -1 upon bug failure
 
    Author: Adam Camilli (aocamilli@wpi.edu)
+
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
-#include <sys/types.h>
+
 #include <unistd.h>
-#include <pwd.h>          // Needed to get home directory (where dumpster is located)
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
+#include <utime.h>
+
 #include <string.h>
 #include <errno.h>
 #include <dirent.h>       // Needed to parse directories
-
-/* Official name of program (real rm.c has this, gotta look official) */
-#define PROGRAM_NAME "rm"
-
-/* Files probably should have less than 10 extensions */
-#define MAX_EXTS 10
-
-/* Maximum length of file paths already given as 4096 in limits.h */
-
-/* Print various helpful debug messages */
-#define DEBUG true
+#include "dumpster.h"
 
 void print_help() {
   printf("Usage: rm [options] [files]\n");
   printf("Options: \n");
+  printf("\t -v : Verbose, print major actions that take place within program\n");
   printf("\t -f : Force a complete remove, i.e. default linux 'rm' or 'rm -r' process\n");
   printf("\t -h : Display help and use message\n");
   printf("\t -r : Remove directories recursively (copy to dumpster)\n");
@@ -52,8 +48,9 @@ void print_help() {
 
 int main(int argc, char **argv) {
   // First check environment variable is set
-  if (getenv("DUMPSTER")  == NULL) {
-    perror("Environmental variable DUMPSTER not detected\n");
+  char *dumpster = (char *) malloc(sizeof(char*));
+  if ((dumpster = getenv("DUMPSTER"))  == NULL) {
+    printf("Environmental variable DUMPSTER not detected\n");
     return 1;
   } if (argc <= 1) {
     printf("Usage: rm [options] [files]\n");
@@ -65,14 +62,20 @@ int main(int argc, char **argv) {
   // Parse any options called with rm
   int opt_count = 0;
   int opt;
-  while ((opt = getopt(argc, argv, "fhr")) != -1) {
+  int really_remove = 0;
+  int VERBOSE = 0;
+  while ((opt = getopt(argc, argv, "vfhr")) != -1) {
     switch (opt) {
+      case 'v':
+	VERBOSE = 1;
+	opt_count++;
+	break;
       case 'h':
 	print_help();
 	return 0;
  	break;
       case 'f':
-        // Call real rm ...
+	really_remove = 1;
 	opt_count++;
 	break;
       case 'r':
@@ -82,98 +85,126 @@ int main(int argc, char **argv) {
     }
   }
 
-  /* If no options, go ahead and move file(s) to dumpster */
+/**************************************************** 
   
-  // First parse argv to get filenames
+ If no options, go ahead and move or copy file(s) to dumpster.
+ First parse argv to find true file paths
+ 
+*****************************************************/
+  
   char **files = (char **) malloc(sizeof(argv));
-  char **realpaths = (char **) malloc(sizeof(argv) * PATH_MAX);  // Absolute paths of files to be found
+  char **abspaths = (char **) malloc(sizeof(argv) * PATH_MAX);  // Absolute paths of files to be found
   
   // Use stdlib function realpath() to find true paths
   for (int i = 0; i < argc - opt_count - 1; i++) { 
     files[i] = argv[i + opt_count + 1]; // +1 for ./rm + number of options
 
-#ifdef DEBUG
-    printf("Getting absolute path of %s\n",files[i]);
-#endif
-
-    realpaths[i] = realpath(files[i], realpaths[i]);
-
-#ifdef DEBUG
-    printf("Absolute path determined to be \n%s\n",realpaths[i]);
-    printf("Errno: %d\n\n",errno);
-#endif
-
-  }
-
-  // Now use rename to complete move operation, adding extension if necessary
-  // Note if more than 9 instances of a file found, we must reject d
-  int successes = 0;
-  for (int i = 0; i < argc - opt_count - 1; i++) {
-    char *path = strcat(getenv("DUMPSTER"), files[i]);
-    printf("Path: %s\n",path);
-#ifdef DEBUG
-    printf("Path of file in dumpster determined to be \n%s\nMoving file...\n\n", path);
-#endif
-    
-    if (realpaths[i] == NULL || path == NULL) {
-      printf("Path came up as null for %s\nOperation aborted\n\n",files[i]);
-      continue;
+    if (VERBOSE) {
+      printf("Getting absolute path of %s\n",files[i]);
     }
-    
-    // Check if duplicate files exist in dumpster
-    int duplicates = 0;
-    if (access(path,F_OK) != -1) {
-      duplicates++;
-      for (int i = 1; i < 10; i++) {
-	// To avoid altering path, add extension to temp variable each iteration
-	// Redeclare it to avoid [path].1.2.3, etc.
-	char *tmp_path = (char *) malloc(PATH_MAX);
-	memset(tmp_path, 0, strlen(tmp_path)); // Clear in between iterations
-	strcat(tmp_path,path);
-	char ext[2];
-	sprintf(ext,"%d",i);
-	strcat(tmp_path,".");
-	if (access(strcat(tmp_path,ext),F_OK) != -1) {
-#ifdef DEBUG
-	  printf("%s\nfound to exist\n\n",tmp_path);
-#endif
-	  duplicates++;
-	} 
-	free (tmp_path);
-      }
-      if (duplicates) {
-	if (duplicates >= 10) {
-	  printf("%s has too many duplicate files (%d)\n\n",files[i],duplicates);
+
+    // Works if files are in current directory
+    abspaths[i] = realpath(files[i], abspaths[i]);
+    // Else utilize dirname()
+    if (abspaths[i] == NULL) {
+      // Make sure we have permission to move file
+      if (errno == EACCES || errno == EPERM) {
+	if (VERBOSE) {
+	  printf(": Insufficient permission to access %s\n",files[i]);
+	}
+	continue;
+      } else if (errno == ENOENT) {
+	char cwd[PATH_MAX];
+	if (getcwd(cwd, sizeof(cwd)) == NULL) {	 
+	  if (VERBOSE) {
+	    printf("Somehow couldn't get current working directory\n");
+	  }
 	  continue;
 	} else {
-	  // Now adjust path accordingly
-	  char ext[2];
-	  sprintf(ext,"%d",duplicates);
-	  strcat(path,".");
-	  strcat(path,ext);        
-#ifdef DEBUG
-	  printf("%d duplicate file(s) found for %s in dumpster\n\n",duplicates,files[i]);
-#endif
+	  while (abspaths[i] == NULL) {
+	    char dpath[PATH_MAX];
+	    memset(dpath,0,sizeof(dpath));
+	    printf("What absolute directory is %s in? (exit to exit)\n",files[i]);
+	    fgets(dpath,PATH_MAX,stdin);
+	    dpath[strcspn(dpath, "\n")] = 0; // Remove trailing newline
+	    if (strcmp(dpath,"exit") == 0) {
+	      printf("Exiting...\n");
+	      break;
+	    }
+	    if (abspaths[i] != NULL)
+	      abspaths[i] = in_dir(files[i], dpath, cwd, 0, VERBOSE);
+	  }
+	  if (abspaths[i] == NULL) {
+	    if (VERBOSE) 
+	      printf("User gave no input as to where %s is, ignoring it\n",files[i]);
+	    continue;
+	  }
 	}
       }
     }
-    rename(realpaths[i], path); 
-    successes++;
-  }
-   
-  /* Free allocated variables */
-  free(files);
-  free(realpaths); 
-  
-  if (successes == 0) {
-    printf("No files successfully moved\n");
-    return -1;
-  } else {
-    if (successes == 1) {
-      printf("%d file successfully moved\n",successes);
-    } else {
-      printf("%d files successfully moved\n",successes);
+    if (VERBOSE) {
+      printf("Absolute path determined to be %s\n",abspaths[i]);
+      if (abspaths[i] == NULL)
+	printf("Errno: %d\n",errno);
     }
-    return 0;
   }
+  
+  
+/***************************************************
+
+ Now find out which device each file is on 
+
+****************************************************/
+
+  struct stat statbuf;
+
+  if (VERBOSE) {
+    printf("Getting stat() for dumpster at %s\n", dumpster);
+  }
+  
+  stat(dumpster,&statbuf);
+  int dumpster_dev = statbuf.st_dev;
+
+  char **same_dev_paths = (char **) malloc(sizeof(abspaths));
+  char **same_dev_names = (char **) malloc(sizeof(files));
+  char **diff_dev_paths = (char **) malloc(sizeof(abspaths));
+  char **diff_dev_names = (char **) malloc(sizeof(files));
+  int same_count = 0;
+  int diff_count = 0;
+
+  for (int i = 0; i < argc - opt_count - 1; i++) {
+    memset(&statbuf, 0, sizeof(statbuf));
+    stat(abspaths[i],&statbuf);
+    if (statbuf.st_dev == dumpster_dev) {
+      same_dev_paths[i] = abspaths[i];
+      same_dev_names[i] = files[i];
+      same_count++;
+    } 
+  } 
+  for (int i = 0; i < argc - opt_count - 1; i++) {
+    memset(&statbuf, 0, sizeof(statbuf));
+    stat(abspaths[i],&statbuf);
+    if (statbuf.st_dev != dumpster_dev) {
+      diff_dev_paths[i] = abspaths[i];
+      diff_dev_names[i] = files[i];
+      diff_count++;
+    } 
+  }
+
+  //For files on the same partition, use rename() syscall
+  for (int i = 0; i < same_count; i++)
+    same_dev_move(same_dev_names[i], same_dev_paths[i], dumpster, 10, VERBOSE);
+
+  //For files on a different partition, use fcopy() function
+  for (int i = 0; i < diff_count; i++)
+    diff_dev_move(diff_dev_names[i], diff_dev_paths[i], dumpster, VERBOSE);
+
+  free(files);
+  free(abspaths);
+  free(same_dev_paths);
+  free(same_dev_names);
+  free(diff_dev_paths);
+  free(diff_dev_names);
+
+  return 0;
 }
