@@ -44,6 +44,7 @@ void print_help() {
   printf("\t -f : Force a complete remove, i.e. default linux 'rm' or 'rm -r' process\n");
   printf("\t -h : Display help and use message\n");
   printf("\t -r : Remove directories recursively (copy to dumpster)\n");
+  printf("\t -t : Print timing of rename() calls and throughput, writing it to timings.txt\n");
 }
 
 int main(int argc, char **argv) {
@@ -63,25 +64,35 @@ int main(int argc, char **argv) {
   int opt_count = 0;
   int opt;
   int really_remove = 0;
+  int recursive = 0;
+  int experiments = 0;
   int VERBOSE = 0;
-  while ((opt = getopt(argc, argv, "vfhr")) != -1) {
+  while ((opt = getopt(argc, argv, "vfhrt")) != -1) {
     switch (opt) {
-      case 'v':
-	VERBOSE = 1;
-	opt_count++;
-	break;
-      case 'h':
-	print_help();
-	return 0;
- 	break;
-      case 'f':
-	really_remove = 1;
-	opt_count++;
-	break;
-      case 'r':
-        // Set up recursion ...
-	opt_count++;
-	break;
+    case 'v':
+      VERBOSE = 1;
+      opt_count++;
+      break;
+    case 'h':
+      print_help();
+      return 0;
+      break;
+    case 'f':
+      really_remove = 1;
+      opt_count++;
+      break;
+    case 'r':
+      recursive = 1;
+      opt_count++;
+      break;
+    case 't':
+      if ((fopen("timings.txt","r") == NULL)) {
+	FILE *f = fopen("timings.txt","w"); // Create timings.txt if it doesn't exist
+	fclose(f);
+      }
+      experiments = 1;
+      opt_count++;
+      break;
     }
   }
 
@@ -131,8 +142,10 @@ int main(int argc, char **argv) {
 	      printf("Exiting...\n");
 	      break;
 	    }
-	    if (abspaths[i] != NULL)
+	    if (dpath != NULL) {
 	      abspaths[i] = in_dir(files[i], dpath, cwd, 0, VERBOSE);
+	      break;
+	    }
 	  }
 	  if (abspaths[i] == NULL) {
 	    if (VERBOSE) 
@@ -175,16 +188,46 @@ int main(int argc, char **argv) {
   for (int i = 0; i < argc - opt_count - 1; i++) {
     memset(&statbuf, 0, sizeof(statbuf));
     stat(abspaths[i],&statbuf);
+    if (S_ISDIR(statbuf.st_mode) && !recursive) {
+      printf("Must use -r option to remove directories\nNo files removed\n");
+      return -1;
+    }
     if (statbuf.st_dev == dumpster_dev) {
       same_dev_paths[i] = abspaths[i];
       same_dev_names[i] = files[i];
       same_count++;
     } 
   } 
+
   for (int i = 0; i < argc - opt_count - 1; i++) {
     memset(&statbuf, 0, sizeof(statbuf));
     stat(abspaths[i],&statbuf);
+    if (S_ISDIR(statbuf.st_mode) && !recursive) {
+      printf("Must use -r option to remove directories\nNo files removed\n");
+      return -1;
+    }
     if (statbuf.st_dev != dumpster_dev) {
+      if (1) {
+	printf("Information for %s\n",files[i]);
+	printf("---------------------------\n");
+	printf("Device: \t\t%d (vs. Dumpster Device: %d)\n",statbuf.st_dev,dumpster_dev);
+	printf("File Size: \t\t%d bytes\n",statbuf.st_size);
+	printf("Number of Links: \t%d\n",statbuf.st_nlink);
+	printf("File inode: \t\t%d\n",statbuf.st_ino);
+	
+	printf("File Permissions: \t");
+	printf( (S_ISDIR(statbuf.st_mode)) ? "d" : "-");
+	printf( (statbuf.st_mode & S_IRUSR) ? "r" : "-");
+	printf( (statbuf.st_mode & S_IWUSR) ? "w" : "-");
+	printf( (statbuf.st_mode & S_IXUSR) ? "x" : "-");
+	printf( (statbuf.st_mode & S_IRGRP) ? "r" : "-");
+	printf( (statbuf.st_mode & S_IWGRP) ? "w" : "-");
+	printf( (statbuf.st_mode & S_IXGRP) ? "x" : "-");
+	printf( (statbuf.st_mode & S_IROTH) ? "r" : "-");
+	printf( (statbuf.st_mode & S_IWOTH) ? "w" : "-");
+	printf( (statbuf.st_mode & S_IXOTH) ? "x" : "-");
+	printf("\n\n");
+      }
       diff_dev_paths[i] = abspaths[i];
       diff_dev_names[i] = files[i];
       diff_count++;
@@ -192,12 +235,38 @@ int main(int argc, char **argv) {
   }
 
   //For files on the same partition, use rename() syscall
-  for (int i = 0; i < same_count; i++)
-    same_dev_move(same_dev_names[i], same_dev_paths[i], dumpster, 10, VERBOSE);
+  if (really_remove) {
+    char *cwd = (char *) malloc(PATH_MAX);
+    if (getcwd(cwd, PATH_MAX) == NULL) {
+      if (VERBOSE) {
+	printf("Somehow couldn't get current working directory\n");
+	printf("Errno: %d\n",errno);
+	return -1;
+      }
+    }
+    for (int i = 0; i < argc - opt_count - 1; i++) {
+      memset(&statbuf, 0, sizeof(statbuf));
+      stat(abspaths[i],&statbuf);
+      if (S_ISDIR(statbuf.st_mode)) {
+	if (VERBOSE)
+	  printf("Removing directory %s\n",abspaths[i]);
+	clear_dir(abspaths[i],cwd,VERBOSE);
+	rmdir(abspaths[i]);
+      } else {
+	if (VERBOSE)
+	  printf("Unlinking file %s\n",abspaths[i]);
+	unlink(abspaths[i]);
+      }
+    } free(cwd);
+  } else {     
+    for (int i = 0; i < same_count; i++)
+      same_dev_move(same_dev_names[i], same_dev_paths[i], dumpster, 10, VERBOSE, experiments);
 
-  //For files on a different partition, use fcopy() function
-  for (int i = 0; i < diff_count; i++)
-    diff_dev_move(diff_dev_names[i], diff_dev_paths[i], dumpster, VERBOSE);
+    //For files on a different partition, use fcopy() function
+    for (int i = 0; i < diff_count; i++) 
+      diff_dev_move(diff_dev_names[i], diff_dev_paths[i], dumpster, VERBOSE, experiments);
+    
+  }
 
   free(files);
   free(abspaths);

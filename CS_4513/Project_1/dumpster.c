@@ -32,6 +32,64 @@
 
 **************************************************************/
 
+/*
+  Write to timings.txt in the following format:
+    (time for recall())
+    throughput in kbytes/sec
+*/
+void write_to_timings(char *metric, double measurement, char *ftime_name) {
+  
+  FILE *ftime = fopen(ftime_name, "a");
+
+  // Verify paths are valid
+  if (ftime == NULL) {
+    printf("Could not open timings file at path %s\n",ftime_name);
+    printf("errno = %d\n",errno);
+    return;
+  }
+
+  fprintf(ftime,"%s",metric);
+  fprintf(ftime,"%lf\n",measurement);
+  
+  // Close file
+  fclose(ftime);
+}
+
+/* Removes the last extension from a file name if is a .num extension
+   mystr is the string to process.
+   dot is the extension separator.
+   sep is the path separator (0 means to ignore). 
+   Returns null if no .num extension detected (must be last extension)
+*/
+
+int *remove_num(char* mystr) {
+    // Error checks and allocate string.
+    if (mystr == NULL)
+        return NULL;
+
+    char *lastdot = strrchr(mystr, '.');
+    
+    if (strlen(mystr) > 2 && lastdot != NULL) {
+      // Check last . is second last char
+      if (*lastdot != *(mystr + strlen(mystr) - 2))
+	return NULL;
+    }
+ 
+    char temp = *(mystr + strlen(mystr) - 1);
+    int check = temp - '0';
+    // Check last char is from 1-9
+    if (check > 0 && check < 10) {
+      if (strlen(mystr) <= 2)
+	return NULL;
+      *lastdot = '\0'; // Cut off .num
+      printf("Returning string %s\n",mystr);
+      return 0;
+    }
+
+    return NULL;
+}
+
+
 /* Checks directory and, recursively, its sub-directories for a file up to a certain depth
    Note: Considers file extension (i.e., not basename(file)) when checking for match 
    Returns the absolute path of match if found, null otherwise
@@ -46,6 +104,8 @@ char * in_dir(char *fname, char *dpath, char *orig_dir, int depth, int VERBOSE) 
   
   DIR *p_dir;
   struct dirent *entry;
+  struct stat statbuf; 
+
   // Check directory exists
   chdir(dpath);
   if ((p_dir = opendir(dpath)) == NULL) {
@@ -55,8 +115,7 @@ char * in_dir(char *fname, char *dpath, char *orig_dir, int depth, int VERBOSE) 
     chdir(orig_dir);
     return NULL;
   }
-  
-  struct stat statbuf;  
+
   // Start parsing
   char *abspath = (char *) malloc (PATH_MAX);
   char *temp_dir = (char *) malloc (PATH_MAX);
@@ -65,12 +124,26 @@ char * in_dir(char *fname, char *dpath, char *orig_dir, int depth, int VERBOSE) 
     lstat(entry->d_name, &statbuf);
     // If we find another directory
     if (S_ISDIR(statbuf.st_mode)) {
+      // Return if it is directory we are searching for
+      // Remove .num extension when checking for equality
+      char *temp = (char *) malloc(PATH_MAX);
+      memset(temp, 0, sizeof(temp));
+      strncpy(temp,entry->d_name,PATH_MAX);
+      /*
+      if (remove_num(temp) != 0)
+	if (VERBOSE)
+	    printf("No .num ext\n");
+      */
+      if (strcmp(fname,temp) == 0) {
+	abspath = realpath(entry->d_name,abspath);
+	chdir(orig_dir);
+	return abspath;
+      }
       // Ignore . .. and hidden directories
       if (entry->d_name[0] == '.')
 	continue;
       // Concatenate original directory onto new subdirectory in temp variable
       strcat(temp_dir, dpath);
-      printf("temp_dir: %s\n",temp_dir);
       if (temp_dir[strlen(temp_dir) - 1] != '/')
 	strcat(temp_dir, "/");
       strcat(temp_dir,entry->d_name);
@@ -82,10 +155,27 @@ char * in_dir(char *fname, char *dpath, char *orig_dir, int depth, int VERBOSE) 
 	chdir(orig_dir);
 	return abspath;
       }
-    } else if (strcmp(fname,entry->d_name) == 0) {
-      abspath = realpath(entry->d_name,abspath);
-      chdir(orig_dir);
-      return abspath;
+    } else {
+      // Remove .num extension when checking for equality
+      char *temp = (char *) malloc(PATH_MAX);
+      memset(temp, 0, sizeof(temp));
+      strncpy(temp,entry->d_name,PATH_MAX);
+      /*
+      if (remove_num(temp) != 0)
+	if (VERBOSE)
+	    printf("No .num ext\n");
+      printf("After .num check, comparing %s and %s\n",fname,temp);
+      */
+      if (strcmp(fname,temp) == 0) {
+	abspath = realpath(entry->d_name,abspath);
+	chdir(orig_dir);
+	return abspath;
+      }
+      if (strcmp(fname,temp) == 0) {
+	abspath = realpath(entry->d_name,abspath);
+	chdir(orig_dir);
+	return abspath;
+      }
     }
   }
 
@@ -133,7 +223,6 @@ int clear_dir(char *dpath, char *orig_dir, int VERBOSE) {
       }
       // Concatenate original directory onto new subdirectory in temp variable
       strcat(temp_dir, dpath);
-      printf("temp_dir: %s\n",temp_dir);
       if (temp_dir[strlen(temp_dir) - 1] != '/')
 	strcat(temp_dir, "/");
       strcat(temp_dir,entry->d_name);
@@ -173,47 +262,63 @@ int clear_dir(char *dpath, char *orig_dir, int VERBOSE) {
    a newly created file in dumpster.
    All permissions/accesstimes are preserved.
  */
-int fcopy(char *src, char *dest, int VERBOSE) {
-  
+int fcopy(char *src, char *dest, int VERBOSE, int timed) {
+
   FILE *old = fopen(src,"r+");
-  FILE *new = fopen(dest,"r+");
+  FILE *new = fopen(dest,"w");
 
   // Verify paths are valid
   if (old == NULL) {
     if (VERBOSE) {
-      printf(": %s not a valid source file -fcopy()\n",src);
-      printf(": errno = %d\n",errno);
-    }
-    return 1;
-  } else if (new == NULL) { // i.e. dumpster was full
-    if (VERBOSE) {
-      printf("No valid destination file -fcopy()\n");
+      printf("%s not a valid source file -fcopy()\n",src);
       printf("errno = %d\n",errno);
     }
-    return 1;  
-  }
+    return 1;
+  }  
 
   // Mark original files' access times.
   struct stat statbuf;  
   struct utimbuf *old_times; 
-  lstat(src,&statbuf);
-
-  old_times->actime = statbuf.st_atim.tv_nsec; // Last access (nanoseconds)
-  old_times->modtime = statbuf.st_mtim.tv_nsec; // Last modification (nanoseconds)
+  lstat(src, &statbuf);
+  /*
+  printf("Turning it into %d\n",(statbuf.st_atim).tv_sec);
+  old_times->actime = (statbuf.st_atim).tv_sec; // Last access (nanoseconds)
+  printf("Turning it into %d\n",(statbuf.st_mtim).tv_sec);
+  old_times->modtime = (statbuf.st_mtim).tv_sec; // Last modification (nanoseconds)
   
-
+  if (1) 
+    printf("Last access: %ld\nLast mod: %ld\n",old_times->actime,old_times->modtime);
+  */
   // Read old file into new
   char buf[FILE_MAX];
   size_t bytes;
-  while ((bytes = fread(buf, 1, sizeof(buf), old)) > 0)
+
+  // Timing variables
+  double byte_count = 0;
+  clock_t begin = clock();
+  
+  if (VERBOSE) 
+    printf("Beginning file write: \n");
+  while ((bytes = fread(buf, 1, sizeof(buf), old)) > 0) {
+    if (VERBOSE) 
+      printf("Writing byte %ld: \n",bytes);
     fwrite(buf, 1, bytes, new);
+    byte_count++;
+  }
+  clock_t end = clock();
+
+  if (timed) {
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    double throughput = byte_count / time_spent;
+    write_to_timings("Throughput: ",throughput,"timings.txt");
+  }
   
   // Close files, unlink old file
   fclose(old);
   fclose(new);
   unlink(src);
   // Adjust access times
-  utime(dest,old_times);
+  //utime(dest,old_times);
 
   return 0;
 }
@@ -230,7 +335,7 @@ int fcopy(char *src, char *dest, int VERBOSE) {
    Use rename to complete move operation, adding extension if necessary
    Note if more than 9 instances of a file found, we must reject following instances
 */
-int same_dev_move(char *fname, char *fpath, char *dumppath, int limited_copies, int VERBOSE) {
+int same_dev_move(char *fname, char *fpath, char *dumppath, int limited_copies, int VERBOSE, int timing) {
 
   // Path of file in new directory
   char *newpath = (char *) malloc(PATH_MAX);
@@ -256,7 +361,7 @@ int same_dev_move(char *fname, char *fpath, char *dumppath, int limited_copies, 
     
   // Check against null
   if (fpath == NULL || newpath == NULL) {
-    printf("Path came up as null for %s\nOperation aborted\n",fname);
+    printf("Path came up as null for %s\n",fname);
     return -1;
   }
     
@@ -301,11 +406,17 @@ int same_dev_move(char *fname, char *fpath, char *dumppath, int limited_copies, 
       }
     }
   }
-
+  
+  clock_t begin = clock();
   if (rename(fpath, newpath) != 0) 
     if (VERBOSE) 
       printf("%s could not be moved to %s\nErrno = %d\n",fname,dumppath,errno);
-      
+  clock_t end = clock();
+  if (timing) {
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    write_to_timings("rename(): ", time_spent, "timings.txt");
+  }
+
   if (VERBOSE)
     printf("%s successfully renamed and moved to %s\n",fname,dumppath);
   free(newpath);
@@ -317,7 +428,7 @@ int same_dev_move(char *fname, char *fpath, char *dumppath, int limited_copies, 
    Use fcopy() to complete move operation, adding extension if necessary
    Note if more than 9 instances of a file found, we must reject following instances
 */
-int diff_dev_move(char *fname, char *fpath, char *dumppath, int VERBOSE) {
+int diff_dev_move(char *fname, char *fpath, char *dumppath, int VERBOSE, int timed) {
   
   // Path of file in dumpster
   char *newpath = dumppath;
@@ -326,16 +437,14 @@ int diff_dev_move(char *fname, char *fpath, char *dumppath, int VERBOSE) {
     printf("Dumpster path: %s\n",newpath);
   }
     
-  if (VERBOSE) {
-    printf("Path of file in dumpster determined to be \n%s\nMoving file...\n", newpath);
-  }
-    
   // Check against null
   if (fpath == NULL || newpath == NULL) {
     printf("No path found for %s\nOperation aborted\n",fname);
     return -1;
   }
-    
+  
+  strcat(newpath,fname);
+  
   // Check if duplicate files exist in dumpster
   int duplicates = 0;
   if (access(newpath,F_OK) != -1) {
@@ -375,7 +484,9 @@ int diff_dev_move(char *fname, char *fpath, char *dumppath, int VERBOSE) {
     }
   }
   
-  fcopy(fpath, newpath, VERBOSE); 
+  if (VERBOSE)
+    printf("Copying %s into %s\n",fpath,newpath);
+  fcopy(fpath, newpath, VERBOSE, timed); 
   printf("%s successfully copied and renamed and moved to dumpster\n", fname);
   return 0;
 }

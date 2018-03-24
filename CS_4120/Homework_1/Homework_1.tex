@@ -3,7 +3,10 @@
 \usepackage[top=0.8in,bottom=0.8in]{geometry}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{enumitem}
 \usepackage{graphicx}
+\usepackage{array,multirow}
+\usepackage[table]{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{positioning}
 \usepackage{mathtools}
@@ -325,6 +328,8 @@ $A=[5, 13, 12, 25, 71, 37, 27, 9, 22]$.
   \begin{figure}[h!]
     \centering
     \includegraphics[height=8cm,keepaspectratio]{fig1.png}
+    \caption{Example for heap sort. The original input array is [16, 14, 10, 8, 7,
+9, 3, 2, 4, 1].}
   \end{figure}
 \end{center}
 \begin{answer}
@@ -835,21 +840,68 @@ round 3: region$_1$=$[2,1]$, region$_2$=$[7, 5, 6]$, result=$[1, 2, 3, 4, 5, 6, 
 
 The fig 2 shows the the detail operations during the round 1.
 
-%\input{fig_quicksort}
+\begin{figure}[!h]
+  \centering
+  \includegraphics[height=8cm,keepaspectratio]{fig2.png}
+  \caption{Example of operations in one round of quick sort. $A[r]$ is the pivot
+element. Elements from $A[p]$ to $A[i]$ are smaller than $A[r]$, those from $A[i + 1]$
+to $A[j − 1]$ are larger than $A[r]$. In your answer you just need to show the step
+(i) for each round.}
+\end{figure}
 
+\begin{answer}
+  \begin{center}
+    \begin{tabular}{c|c|c|c|c|c|c|c}
+      \textbf{Region} & \multicolumn{6}{c|}{\textbf{Result}} & \textbf{Round}  \\
+      \hline
+      $[5,13,12,25,71,37]$ & 5 & 13 & 12 & 25 & 71 & 37 & \multirow{1}{*}{1} \\  
+      \hline
+      $[5,13,12], [71,37] $ & 5 & 13 & 12 & \cellcolor{black}\textcolor{white}{\textbf{25}}& 71 & 37 & \multirow{1}{*}{2} \\  
+      \hline
+      $[5],[13],[71]$ & 5 & \cellcolor{black}\textcolor{white}{\textbf{12}} & 13 & \cellcolor{black}\textcolor{white}{\textbf{25}} & \cellcolor{black}\textcolor{white}{\textbf{37}} & 71 & \multirow{1}{*}{3} \\
+      \hline
+    \end{tabular} 
+  \end{center}
+\end{answer}
+\newpage
 \section*{Problem 9}
-The input is two sets $S1$ and $S2$ containing $n$ real numbers in total, and a real number $x$.
+The input is two sets $S1$ and $S2$ containing $n$ real numbers in total, and a real number $x$. You can either show pseudo code or describe solutions in English.
 
-(a) Find a O($n$log$n$) time algorithm that determines whether there exists an element from $S1$ and an element from $S2$ whose sum is exactly $x$.
-
-(b) Suppose now that the two sets are given in sorted order. Find a O($n$)-time algorithm solving this problem.
-
-You can either show pseudo code or describe it in English.
+\begin{enumerate}[label=\alph*.]
+\item Find a O($n\log n$) time algorithm that determines whether there
+  exists an element from $S1$ and an element from $S2$ whose sum is
+  exactly $x$.
+  \begin{answer}
+    Sort $S1$ using heap sort (worst case $O(n\log n4)$) and then for every element $n \in S1$, simply perform binary search for $x-n$ in $S2$ (worst case $O(\log n)$).
+  \end{answer}
+\item Suppose now that the two sets are given in sorted order. Find a O($n$)-time algorithm solving this problem.
+  \begin{answer}
+    Let $y$ be the sum of the smallest element of $S1$ and the largest element of $S2$. If $y = x$, done. If $y > x$, largest element of $S2$ is not part of solution. Recalculate $y$ with second largest, and so on (worst case $O(n)$). If $y < x$, the same argument applies to smallest element of $S1$. 
+  \end{answer}
+\end{enumerate}
 
 \section*{Problem 10}
 Show that $2n-1$ comparisons are necessary in the worst case to merge
 two sorted lists containing $n$ elements each.
 
+\begin{answer}
+  Let lists $A$ and $B$ be sorted in ascending order such that $A_1 \le \ldots \le A_n$ and $B_1 \le \ldots \le B_n$. \\ \\
+  Let list $C$ be the correctly merged list $A$ and $B$, such that
+  \[C = a_1 \le b_1 \le a_2 \le b_2 \le \ldots \le a_n \le b_n \]
+  Intuitively, we can see that to create $C$, there are only two comparisons must be performed for each $a_i$, since both lists are sorted and of the same length:
+  \begin{enumerate}
+  \item $a_i \le a_{i}$
+  \item $a_i \le b_{i+1}$
+  \end{enumerate}
+  In the worst case, these must be done for all $n$ elements \emph{except for the last element $a_n$}, on which only the first one can be done. Therefore, if every element is compared, $2n-1$ total comparisons must be made. In fact, we also show this to be the lower bound: 
+  \begin{enumerate}
+  \item Suppose there exists an algorithm that runs in $(2n-2)$
+    comparisons or less that correctly merges lists $X$ and $Y$ of size $n$.
+  \item Let $X$ be a list where $x_i=2i-1$ for $i = 1 \ldots n$. Let $Y$ be a list where $y_i=2i$ for $i = 1 \ldots n$. Let all elements be unique.
+  \item Run the algorithm on $X$ and $Y$. Since it takes $(2n-2)$ comparisons, there must be at least one element $x_i$ in the merged list $Z$ which has not been compared to $y_i$ and $y_{i+1}$. Therefore if the uncompared $y_i$ or the uncompared $y_{i+1}$ was greater than $x_i$, they will not have been swapped, and the result will be incorrect.
+  \item Therefore there is no algorithm that is fully correct that runs in less than $2n-1$ comparisons.
+  \end{enumerate}
+\end{answer}
 
 %If you want centered math on its own line, you can use a slash and square bracket.\\
 %\[

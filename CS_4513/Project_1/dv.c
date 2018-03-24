@@ -88,35 +88,38 @@ int main(int argc, char **argv) {
   }
   
   char *path = (char *) malloc(PATH_MAX);
+  int is_direc = 0;
   for (int i = 0; i < argc - opt_count - 1; i++) {
     memset(path,0,PATH_MAX);
     if (ALL_FILES) {
-      for (int j = 0; j < 10; j++) {	
+      /* I decided it was best to keep the .num after retrieving files */
+      for (int j = 0; j < 10; j++) {
 	memset(path, 0, PATH_MAX); // Clear between iterations
-	if (j == 0) {
-	  if ((path = in_dir(files[i], dumpster, dumpster, 0,VERBOSE)) != NULL) {
-	    if (VERBOSE) {
-	      printf("Retrieving file %s from dumpster to %s\n",files[i],cwd);
-	    }
-	    if (same_dev_move(files[i], path, cwd, PATH_MAX, VERBOSE) != 0) {
-	      if (VERBOSE)
-		printf("Couldn't retrieve %s\n",files[i]);
-	    } else 
-	      if (VERBOSE)
-		printf("Retrieved %s into %s\n",files[i],cwd);
-	  }
-	  continue;
-	}
-	strncpy(path,files[i],PATH_MAX);
-	char ext[2];
-	sprintf(ext,"%d",j);
-	strcat(path,".");
-	strcat(path,ext);
-	if ((path = in_dir(path, dumpster, dumpster,0,VERBOSE)) != NULL) {
+	/*
+        if ((path = in_dir(files[i], dumpster, dumpster, 0, VERBOSE)) != NULL) {
 	  if (VERBOSE) {
 	    printf("Retrieving file %s from dumpster to %s\n",files[i],cwd);
 	  }
 	  if (same_dev_move(files[i], path, cwd, PATH_MAX, VERBOSE) != 0) {
+	    if (VERBOSE)
+	      printf("Couldn't retrieve %s\n",files[i]);
+	  } else 
+	    if (VERBOSE)
+	      printf("Retrieved %s into %s\n",files[i],cwd);
+	}
+	*/
+	strncpy(path,files[i],PATH_MAX);
+	if (j > 0) {
+	  char ext[2];
+	  sprintf(ext,"%d",j);
+	  strcat(path,".");
+	  strcat(path,ext);
+	}
+	if ((path = in_dir(path, dumpster, dumpster,0,VERBOSE)) != NULL) {
+	  if (VERBOSE) {
+	    printf("Retrieving file %s from dumpster to %s\n",files[i],cwd);
+	  }
+	  if (same_dev_move(files[i], path, cwd, PATH_MAX, VERBOSE, 0) != 0) {
 	    if (VERBOSE)
 	      printf("Couldn't retrieve %s\n",files[i]);
 	  } else 
@@ -127,12 +130,12 @@ int main(int argc, char **argv) {
 	    printf("Done retrieving copies of %s\n",files[i]);
 	  break;
 	}
-      } 
+      }
     } else if ((path = in_dir(files[i], dumpster, dumpster, 0,VERBOSE)) != NULL) {
       if (VERBOSE) {
 	printf("Retrieving file %s from dumpster to %s\n",files[i],cwd);
       }
-      if (same_dev_move(files[i], path, cwd, PATH_MAX, VERBOSE) != 0) {
+      if (same_dev_move(files[i], path, cwd, PATH_MAX, VERBOSE, 0) != 0) {
 	if (VERBOSE)
 	  printf("Couldn't retrieve %s\n",files[i]);
       } else 
