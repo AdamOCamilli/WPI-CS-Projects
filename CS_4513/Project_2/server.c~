@@ -1,0 +1,65 @@
+/* 'server.c' - An implementation of a server program which handles and accepts incoming TCP 
+   connections.
+
+ */
+
+// Standard libraries
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <errno.h>
+// Network/system libraries
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <pthread.h>
+
+// Comment out to deactivate assert()s
+// #define NDEBUG
+
+#define MAX_MSG 1000
+
+#define PORT 3490
+
+#define BACKLOG 10
+
+
+/****************************************************************
+
+                          Server Structs
+
+****************************************************************/
+
+/* Encapsulates properties of the server */
+typedef struct server {
+struct addrinfo *hints;        // ...
+struct addrinfo *servinfo;     // ...
+int sockfd;                    // File descriptor of socket
+int connfd;                    // File descriptor of connection
+} server_t;
+
+/****************************************************************
+
+               Server Routines and Helper Functions
+
+****************************************************************/
+
+/* Atomic function to print an error msg and abort
+   NOTE: WILL TERMINATE SERVER IF CALLED 
+*/
+void panic(char *func, char *msg, void *args);
+
+int main() {
+
+
+return 0;
+}
+
+void panic(char *func, char *msg, void *args) {
+perror(func);
+  if (strlen(msg) > 0) {
+    printf(msg,args);
+  }
+  abort();
+}
