@@ -328,7 +328,8 @@ void client_handler(int csock, int ssock) {
   while(1) {
     
     printf("Getting user's name...\n");
-    read_size = recv_all(csock, name, MAX_NAME_LEN);
+    memset(client_message, 0, MAX_MSG_LEN);
+    read_size = recv_all(csock, client_message, MAX_NAME_LEN);
     if (read_size < 0) {
       perror("recv_all");
       printf("errno: %d\n",errno);
@@ -338,6 +339,10 @@ void client_handler(int csock, int ssock) {
       return;
     }
 
+    name = client_message;
+
+    printf("User's name: %s (%d bytes)\n",name, read_size);
+    send_all(csock, name, MAX_NAME_LEN);
     
   }
 

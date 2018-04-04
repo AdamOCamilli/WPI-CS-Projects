@@ -140,6 +140,12 @@ int main(int argc , char *argv[]) {
     if (send_all(sock, userName, MAX_MSG_LEN) < 0) {
       perror("Send failed. Try again.");
     }
+    memset(server_reply, 0, MAX_MSG_LEN);
+    if (recv_all(sock, server_reply, MAX_NAME_LEN)) {
+      printf("Server: %s\n",server_reply);
+      break;
+    }
+    tries--;
   }
   
   free(userName);
@@ -152,6 +158,9 @@ int main(int argc , char *argv[]) {
     printf("Server lost erroneously: May have to kill this process to launch again. Goodbye!\n");
     close(sock);
     return 1;
+  } else {
+    printf("Server disconnected normally\n");
+    close(sock);
   }
   
   return 0;    
