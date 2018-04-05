@@ -136,7 +136,7 @@ int main(int argc , char *argv[]) {
   char *username  = malloc(MAX_NAME_LEN);
 
   char *server_reply = malloc(MAX_MSG_LEN);
-  char *shellInput = malloc(MAX_MSG_LEN);
+  char *command = malloc(MAX_MSG_LEN);
   char *temp_message = malloc(MAX_MSG_LEN);
   char *passwd = malloc(MAX_MSG_LEN);
 
@@ -193,7 +193,6 @@ int main(int argc , char *argv[]) {
 	  continue;
 	}
 	printf("Verification successful!\n");
-	clean_break++;
 	break;
       }
       
@@ -203,12 +202,30 @@ int main(int argc , char *argv[]) {
     }
     tries--;
   }
+
+  // Get command to execute
+  memset(command, 0, MAX_MSG_LEN);
+  printf("Command: ");
+  fgets(command, MAX_MSG_LEN, stdin);
+  strtok(command,"\n"); // Clear newline
+  // Let server know size of our command
+  reply_size = strlen(command) + 1;
+  send_string_size(sock, &int_server_reply, reply_size);
+  // Send command to server
+  send_all(sock, command, reply_size);
+  // Receive size of output from server
+  int output_size;
+  recv_string_size(sock, &output_size);
+  memset(server_reply, 0, MAX_MSG_LEN);
+  recv_all(sock, server_reply, output_size);
+  printf("%s", server_reply);
+  clean_break++;
   
   free(username);
   free(passwd);
   free(server_reply);
   free(temp_message);
-  free(shellInput);
+  free(command);
   
   if (!clean_break) {
     printf("Server lost erroneously: May have to kill this process to launch again. Goodbye!\n");
