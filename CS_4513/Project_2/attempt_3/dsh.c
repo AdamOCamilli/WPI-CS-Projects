@@ -18,6 +18,7 @@
 #define MAX_MSG_LEN 20000
 #define MAX_NAME_LEN 200
 #define LOGIN_TRIES 5
+#define SIZE_QUERY 0
 
 /* recv() ALL bytes from socket */ 
 int send_all(int sockfd, const void *buf, size_t len) {
@@ -38,13 +39,14 @@ int send_all(int sockfd, const void *buf, size_t len) {
   return 0;
 }
 
-/* recv() ALL bytes from socket */
+/* recv() ALL bytes from socket and pick out ones we want */ 
 int recv_all(int sockfd, void *buf, size_t size) {
   int read_bytes = 0;
   int read = 0;
   
-  while(read_bytes < size) {
+ while(read_bytes < size) {
     read += recv(sockfd, buf, size, 0);
+    read_bytes += read;
     if (read < 0) {
       perror("recv");
       return read_bytes;
@@ -54,6 +56,17 @@ int recv_all(int sockfd, void *buf, size_t size) {
   }
 
   return read_bytes;
+}
+
+void recv_string_size(int sockfd, int *size) {
+  send(sockfd, size, sizeof (int *), 0);
+  recv(sockfd, size, sizeof (int *), 0);
+}
+
+void send_string_size(int sockfd, int *p, int size) {
+  recv(sockfd, p, sizeof (int *), 0);
+  *p = size;
+  send(sockfd, p, sizeof (int *), 0);
 }
 
 int main(int argc , char *argv[]) {
@@ -120,35 +133,41 @@ int main(int argc , char *argv[]) {
   }
   free(temp_arg);
 
-  char *userName  = malloc(MAX_MSG_LEN);
+  char *username  = malloc(MAX_NAME_LEN);
+
   char *server_reply = malloc(MAX_MSG_LEN);
   char *shellInput = malloc(MAX_MSG_LEN);
   char *temp_message = malloc(MAX_MSG_LEN);
   char *passwd = malloc(MAX_MSG_LEN);
 
-  int verifying = 0;
-  long long_server_reply, converted_reply;
+  int int_server_reply;
+  int reply_size;
   int tries = 5;
   while (tries >= 0) {
     if (tries < 5) 
       printf("%d tries left\n",tries);
     // Get user name
-    memset(userName, 0, MAX_MSG_LEN);
+    memset(username, 0, MAX_NAME_LEN);
     printf("Username: "); // Sent in plaintext to server
-    fgets(userName, MAX_MSG_LEN, stdin);
-    strtok(userName,"\n"); // Clear newline
-    if (send_all(sock, userName, MAX_MSG_LEN) < 0) {
+    fgets(username, MAX_NAME_LEN, stdin);
+    strtok(username,"\n"); // Clear newline
+    
+    reply_size = strlen(username) + 1; // +1 for null terminator
+    send_string_size(sock, &int_server_reply, reply_size); 
+    
+    if (send_all(sock, username, reply_size) < 0) {
       perror("Send failed. Try again.");
     }
     memset(server_reply, 0, MAX_MSG_LEN);
     if (recv_all(sock, server_reply, MAX_NAME_LEN)) {
       printf("Server: %s\n",server_reply);
+      clean_break++;
       break;
     }
     tries--;
   }
   
-  free(userName);
+  free(username);
   free(passwd);
   free(server_reply);
   free(temp_message);

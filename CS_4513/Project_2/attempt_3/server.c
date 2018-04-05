@@ -158,10 +158,12 @@ int delete_user(user_t **table, char *name) {
   
 }
 
+/* Helper functions for clients*/
 void client_handler(int csock, int ssock);
 int send_all(int sockfd, const void *buf, size_t len);
 int recv_all(int sockfd, void *buf, size_t size); 
-
+void recv_string_size(int sockfd, int *size);
+void send_string_size(int sockfd, int *p, int size);
 
 /* Code to catch SIGINT which is only way to stop server */
 static volatile int run = 1;
@@ -319,17 +321,21 @@ int main(int argc, char **argv) {
 
 void client_handler(int csock, int ssock) {
   
-  int read_size;
+  int read_size; // How many bytes from recv
+  int string_size; // Length of expected string from send()
   char client_message[MAX_MSG_LEN];
   char temp_message[MAX_MSG_LEN];
   char *name = malloc(MAX_NAME_LEN);
 
   // Get user's name
-  while(1) {
+  while (1) {
     
     printf("Getting user's name...\n");
     memset(client_message, 0, MAX_MSG_LEN);
-    read_size = recv_all(csock, client_message, MAX_NAME_LEN);
+    
+    recv_string_size(csock, &string_size); // Size of expected string
+    read_size = recv_all(csock, client_message, string_size);
+    
     if (read_size < 0) {
       perror("recv_all");
       printf("errno: %d\n",errno);
@@ -339,10 +345,11 @@ void client_handler(int csock, int ssock) {
       return;
     }
 
-    name = client_message;
+    name = strdup(client_message);
 
     printf("User's name: %s (%d bytes)\n",name, read_size);
     send_all(csock, name, MAX_NAME_LEN);
+    break;
     
   }
 
@@ -369,20 +376,33 @@ int send_all(int sockfd, const void *buf, size_t len) {
   return 0;
 }
 
-/* recv() ALL bytes from socket and pick out ones we want */ 
+/* recv() ALL bytes from socket and pick out ones we want 
+*/ 
 int recv_all(int sockfd, void *buf, size_t size) {
   int read_bytes = 0;
   int read = 0;
   
- while(read_bytes < size) {
-    read += recv(sockfd, buf, size, 0);
-    if (read < 0) {
-      perror("recv");
-      return read_bytes;
-    } else if (read == 0) { // Server disconnected
-      return read_bytes;
-    }
-  }
+ while (read_bytes < size) {
+   read += recv(sockfd, buf, size, 0);
+   read_bytes += read;
+   if (read < 0) {
+     perror("recv");
+     return read_bytes;
+   } else if (read == 0) { // Server disconnected
+     return read_bytes;
+   }
+ }
 
   return read_bytes;
+}
+
+void recv_string_size(int sockfd, int *size) {
+  send(sockfd, size, sizeof (int *), 0);
+  recv(sockfd, size, sizeof (int *), 0);
+}
+
+void send_string_size(int sockfd, int *p, int size) {
+  recv(sockfd, p, sizeof (int *), 0);
+  *p = size;
+  send(sockfd, p, sizeof (int *), 0);
 }
