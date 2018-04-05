@@ -153,10 +153,19 @@ int main(int argc , char *argv[]) {
     printf("Username: "); // Sent in plaintext to server
     fgets(username, MAX_NAME_LEN, stdin);
     strtok(username,"\n"); // Clear newline
+
+    memset(passwd, 0, MAX_NAME_LEN);
+    printf("Password: "); // Sent in hashed form to server
+    system("stty -echo"); // Disable echo
+    fgets(passwd, MAX_NAME_LEN, stdin);
+    system("stty echo"); // Reenable echo
+    strtok(passwd,"\n"); // Clear newline
+
     reply_size = strlen(username) + 1; // +1 for null terminator
     send_string_size(sock, &int_server_reply, reply_size); 
     if (send_all(sock, username, reply_size) < 0) {
-      perror("Send failed. Try again.");
+      perror("Send");
+      break;
     }
     memset(server_reply, 0, MAX_MSG_LEN);
     if (recv(sock, &long_server_reply, sizeof(long *), 0)) {
@@ -166,6 +175,24 @@ int main(int argc , char *argv[]) {
 	continue;
       } else {
 	printf("%s found!\n",username);
+	// Receive user's salt
+	recv(sock, &long_server_reply, sizeof(long *), 0);
+	printf("Server sent salt %ld\n", long_server_reply);
+	memset(temp_message, 0, MAX_MSG_LEN);
+	snprintf(temp_message, sizeof (long_server_reply), "%ld", long_server_reply);
+	reply_size = strlen(crypt(passwd, temp_message)) + 1;
+	send_string_size(sock, &int_server_reply, reply_size);
+	if (send_all(sock, crypt(passwd, temp_message), reply_size) < 0 ) {
+	  perror("send");
+	  break;
+	}
+	// Receive if we are verified (0 for yes, 1 for no)
+	recv(sock, &long_server_reply, sizeof(long *), 0);
+	if (long_server_reply) {
+	  printf("Verification failed\n");
+	  continue;
+	}
+	printf("Verification successful!\n");
 	clean_break++;
 	break;
       }

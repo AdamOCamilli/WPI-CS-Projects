@@ -331,6 +331,7 @@ void client_handler(int csock, int ssock) {
 
   // Get user's name and passwd hash
   while (1) {
+    /* Verify user is registered */
     printf("Getting user's name...\n");
     memset(client_message, 0, MAX_MSG_LEN);
     recv_string_size(csock, &string_size); // Size of expected string
@@ -355,10 +356,27 @@ void client_handler(int csock, int ssock) {
       long_reply = 0;
       send(csock, &long_reply, sizeof (long *), 0); 
       printf("%s found\n", name);
-      break;
     }
+    /* Verify user has correct hash */
+    printf("Verifying user...\n");
     memset(client_message, 0, MAX_MSG_LEN);
-    
+    // Send user their salt
+    long_reply = search_by_name(usertable,name)->salt;
+    send(csock, &long_reply, sizeof (long *), 0);
+    // Get size of user's calculated hash
+    recv_string_size(csock, &string_size);
+    read_size = recv_all(csock, client_message, string_size);
+    if (strncmp(search_by_name(usertable,name)->key, client_message, MAX_NAME_LEN) == 0) {
+      printf("Verification successful!\n");
+      long_reply = 0;
+      send(csock, &long_reply, sizeof (long *), 0);
+      break;
+    } else {
+      printf("Verification failed\n");
+      long_reply = 1;
+      send(csock, &long_reply, sizeof (long *), 0);
+    }
+
   }
 
   free(name);
@@ -394,7 +412,7 @@ int recv_all(int sockfd, void *buf, size_t size) {
    read += recv(sockfd, buf, size, 0);
    read_bytes += read;
    if (read < 0) {
-     perror("recv");
+     perror("recv_all");
      return read_bytes;
    } else if (read == 0) { // Server disconnected
      return read_bytes;
