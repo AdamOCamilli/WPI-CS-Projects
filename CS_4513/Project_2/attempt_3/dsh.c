@@ -141,8 +141,10 @@ int main(int argc , char *argv[]) {
   char *passwd = malloc(MAX_MSG_LEN);
 
   int int_server_reply;
+  long long_server_reply;
   int reply_size;
   int tries = 5;
+  // Send username and password
   while (tries >= 0) {
     if (tries < 5) 
       printf("%d tries left\n",tries);
@@ -151,17 +153,25 @@ int main(int argc , char *argv[]) {
     printf("Username: "); // Sent in plaintext to server
     fgets(username, MAX_NAME_LEN, stdin);
     strtok(username,"\n"); // Clear newline
-    
     reply_size = strlen(username) + 1; // +1 for null terminator
     send_string_size(sock, &int_server_reply, reply_size); 
-    
     if (send_all(sock, username, reply_size) < 0) {
       perror("Send failed. Try again.");
     }
     memset(server_reply, 0, MAX_MSG_LEN);
-    if (recv_all(sock, server_reply, MAX_NAME_LEN)) {
-      printf("Server: %s\n",server_reply);
-      clean_break++;
+    if (recv(sock, &long_server_reply, sizeof(long *), 0)) {
+      // Server writes -1 if user not registered
+      if (long_server_reply < 0) {
+	printf("%s not registered. Try again\n",username);
+	continue;
+      } else {
+	printf("%s found!\n",username);
+	clean_break++;
+	break;
+      }
+      
+    } else {
+      perror("Server lost");
       break;
     }
     tries--;

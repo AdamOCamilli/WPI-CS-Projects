@@ -323,19 +323,18 @@ void client_handler(int csock, int ssock) {
   
   int read_size; // How many bytes from recv
   int string_size; // Length of expected string from send()
+  long long_reply;
+
   char client_message[MAX_MSG_LEN];
   char temp_message[MAX_MSG_LEN];
   char *name = malloc(MAX_NAME_LEN);
 
-  // Get user's name
+  // Get user's name and passwd hash
   while (1) {
-    
     printf("Getting user's name...\n");
     memset(client_message, 0, MAX_MSG_LEN);
-    
     recv_string_size(csock, &string_size); // Size of expected string
     read_size = recv_all(csock, client_message, string_size);
-    
     if (read_size < 0) {
       perror("recv_all");
       printf("errno: %d\n",errno);
@@ -344,12 +343,21 @@ void client_handler(int csock, int ssock) {
       close(csock);
       return;
     }
-
     name = strdup(client_message);
-
     printf("User's name: %s (%d bytes)\n",name, read_size);
-    send_all(csock, name, MAX_NAME_LEN);
-    break;
+    printf("Looking up %s...\n", name);
+    // Check user is registered
+    if (search_by_name(usertable,name) == NULL) {
+      long_reply = -1;
+      send(csock, &long_reply, sizeof (long *), 0); 
+      continue; // Try again
+    } else {
+      long_reply = 0;
+      send(csock, &long_reply, sizeof (long *), 0); 
+      printf("%s found\n", name);
+      break;
+    }
+    memset(client_message, 0, MAX_MSG_LEN);
     
   }
 
