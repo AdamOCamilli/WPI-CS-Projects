@@ -55,7 +55,7 @@ public class Transaction implements Datatype {
 	}
 	
 	protected String randomAlphabetStr(int min, int max) {
-		String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz -";
+		String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 		Random rand = new Random();
 		int count = rand.nextInt(max) + min;
 		
