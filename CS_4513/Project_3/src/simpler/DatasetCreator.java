@@ -15,15 +15,34 @@ import java.util.Random;
  */
 public final class DatasetCreator {
 
+	/**
+	 * <code>Customer</code> primary keys that have not been used for a <code>Transaction</code>.
+	 */
 	ArrayList<String> prevCustPKs = new ArrayList<String>();
 
 	public static void main(String[] args) {
 		
 		DatasetCreator dc = new DatasetCreator();
 		
-		int entries = 20000;
-		File custcsv = new File("Customer" + "s" + ".csv");
-		File transcsv = new File("Transaction" + "s" + ".csv");
+		int entries = 0;
+		try {
+			entries = Integer.parseInt(args[0]);
+		} catch (NumberFormatException nfe) {
+			System.out.println(args[0] + " is not valid number of entries.");
+			nfe.printStackTrace();
+			return;
+		}
+		
+		if (entries > 50000) {
+			System.out.println("Cannot create more than 50000 unique entries");
+			return;
+		} else if (entries <= 0) {
+			System.out.println(args[0] + " is not a valid number of entries.");
+			return;
+		}
+		
+		File custcsv = new File("Customer" + "s" + ".txt");
+		File transcsv = new File("Transaction" + "s" + ".txt");
 
 		try {
 			for (int i = 0; i < entries; i++) 

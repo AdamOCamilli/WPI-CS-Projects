@@ -38,13 +38,6 @@ public class Customer implements Datatype {
 		return attrNames;
 	}
 
-	
-	/**
-	 * 
-	 * @param key
-	 * @param value
-	 * @return null if key not found
-	 */
 	public String getValue(String key) {
 		if (this.attributes.containsKey(key)) {
 			return this.attributes.get(key);
@@ -73,11 +66,6 @@ public class Customer implements Datatype {
 		return randStr.toString();
 	}
 	
-	/**
-	 * Returns a possible random value for the given attribute
-	 * @param key
-	 * @return Random value within assignment description bounds
-	 */
 	public String getRandomValueFor(String key) {
 		Random rand;
 		Integer adjusted;
