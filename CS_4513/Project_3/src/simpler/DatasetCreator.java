@@ -10,7 +10,9 @@ import java.util.Random;
 
 /**
  * Simple program that creates two datasets and lists them in two .txt files in CSV (Comma Separated Value) format. <p>
- * Can be used from command line: {@code ./DatasetCreator <number of entries>>} <p>
+ * Can be used from command line: <p>
+ * {@code $ javac src/simpler/*.java} <br>
+ * {@code $ java -cp . simpler.DatasetCreator <number of entries> } <p>
  * If previous files were created, newly created files will be titled {@code Datatypes1.txt, Datatypes2.txt} and so on.
  * @author Adam Camilli
  *
@@ -26,8 +28,8 @@ public final class DatasetCreator {
 		
 		DatasetCreator dc = new DatasetCreator();
 		
-		if (args.length > 1) {
-			System.out.println("Usage: ./DatasetCreator <number of entries> <delete old files (t/f)>");
+		if (args.length > 1 || args.length <= 0) {
+			System.out.println("Usage: java -cp . simpler.DatasetCreator <number of entries>");
 			return;
 		}
 		
