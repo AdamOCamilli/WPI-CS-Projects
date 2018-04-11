@@ -1,0 +1,23 @@
+Part 2:
+
+First I tried using the command:
+$sudo hadoop fs -copyFromLocal /home/hadoop/Desktop/DataSet /home/hadoop/input
+
+**Note: DataSet is a .zip file with Customers.csv and Transactions.csv in it
+
+This resulted in an error saying:
+$18/04/10 19:41:32 INFO ipc.Client: Retrying connect to server: localhost/127.0.0.1:8020. Already tried 0 time(s); 
+	retry policy is RetryUpToMaximumCountWithFixedSleep(maxRetries=10, sleepTime=1 SECONDS)
+
+So, I used this series of command:
+$stop-all.sh
+$hadoop namenode -format
+$start-all.sh
+
+Then, I ran:
+$sudo hadoop fs -copyFromLocal /home/hadoop/Desktop/DataSet /home/hadoop/input
+
+This worked. To confirm I ran:
+$sudo hadoop fs -copyToLocal /home/hadoop/input /home/hadoop/Desktop/
+
+Then I checked the input file that was copied to the Desktop and it did indeed have the the Customer.csv and Transaction.csv files.
