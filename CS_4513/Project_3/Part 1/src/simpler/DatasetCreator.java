@@ -12,7 +12,7 @@ import java.util.Random;
  * Simple program that creates two datasets and lists them in two .txt files in CSV (Comma Separated Value) format. <p>
  * Can be used from command line: <p>
  * {@code $ javac src/simpler/*.java} <br>
- * {@code $ java -cp . simpler.DatasetCreator <number of entries> } <p>
+ * {@code $ java -cp . simpler.DatasetCreator <#Customers> <#Transactions> } <p>
  * If previous files were created, newly created files will be titled {@code Datatypes1.txt, Datatypes2.txt} and so on.
  * @author Adam Camilli
  *
@@ -20,7 +20,7 @@ import java.util.Random;
 public final class DatasetCreator {
 
 	/**
-	 * <code>Customer</code> primary keys that have not been used as foreign keys for a <code>Transaction</code>.
+	 * <code>Customer</code> primary keys.
 	 */
 	ArrayList<String> prevCustPKs = new ArrayList<String>();
 
@@ -28,25 +28,27 @@ public final class DatasetCreator {
 		
 		DatasetCreator dc = new DatasetCreator();
 		
-		if (args.length > 1 || args.length <= 0) {
+		if (args.length != 2) {
 			System.out.println("Usage: java -cp . simpler.DatasetCreator <number of entries>");
 			return;
 		}
 		
-		int entries = 0;
+		int cust_entries = 0;
+		int trans_entries = 0;
 		try {
-			entries = Integer.parseInt(args[0]);
+			cust_entries = Integer.parseInt(args[0]);
+			trans_entries = Integer.parseInt(args[1]);
 		} catch (NumberFormatException nfe) {
 			System.out.println(args[0] + " is not valid number of entries.");
 			nfe.printStackTrace();
 			return;
 		}
 		
-		if (entries > 50000) {
-			System.out.println("Cannot create more than 50000 unique entries");
+		if (cust_entries > 50000) {
+			System.out.println("Cannot create more than 50000 unique Customers");
 			return;
-		} else if (entries <= 0) {
-			System.out.println(args[0] + " is not a valid number of entries.");
+		} else if (trans_entries > 5000000) {
+			System.out.println("Cannot create more than 5000000 unique Transactions");
 			return;
 		}
 		
@@ -61,9 +63,9 @@ public final class DatasetCreator {
 		}
 
 		try {
-			for (int i = 0; i < entries; i++) 
+			for (int i = 0; i < cust_entries; i++) 
 				dc.writeToCSV(custcsv, new Customer(), true);
-			for (int i = 0; i < entries; i++) {
+			for (int i = 0; i < trans_entries; i++) {
 				Customer c = new Customer();
 				String ID = dc.getPrevPK(dc.prevCustPKs);
 				c.setValue("ID", ID);
@@ -77,14 +79,12 @@ public final class DatasetCreator {
 	}
 	
 	/**
-	 * Returns unused primary key and then removes it from the list of unused primary keys.
-	 * @return Unused <code>Customer</code> primary key.
+	 * @return <code>Customer</code> primary key.
 	 */
 	public String getPrevPK(ArrayList<String> prevPKList) {
 		Random rand = new Random();
 		int idx = rand.nextInt(prevPKList.size());
 		String PK = prevPKList.get(idx);
-		prevPKList.remove(idx);
 		return PK;
 	}
 	
