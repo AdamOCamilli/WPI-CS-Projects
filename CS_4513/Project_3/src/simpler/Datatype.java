@@ -8,7 +8,15 @@ import java.util.ArrayList;
  *
  */
 public interface Datatype {
+	/**
+	 * Returns the NAME of the primary key attribute, NOT the actual value.
+	 * @return Name of primary key attribute
+	 */
 	public String getPrimaryKey();
+	/**
+	 * Returns the NAMES of attributes, NOT the actual values.
+	 * @return Names of all attributes
+	 */
 	public ArrayList<String> getAttributes();
 	public String getValue(String key);
 	public void setValue(String key, String value);

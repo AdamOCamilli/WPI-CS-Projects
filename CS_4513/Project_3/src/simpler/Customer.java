@@ -4,6 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
+/**
+ * A <code>Datatype</code> with the following attributes: <p>
+ * 	ID:[1,50000]:Int -------------->Primary Key<br>
+ * 	Name: [10,20]:String <br>
+ * 	Age: [10,70]:Int <br>
+ *  CountryCode: [1,10]:Int <br>
+ *  Salary: [100,10000]:Float <br>
+ * @author Adam Camilli (aocamilli@wpi.edu)
+ *
+ */
 public class Customer implements Datatype {
 
 	private HashMap<String,String> attributes = new HashMap<String,String>();
@@ -16,12 +26,12 @@ public class Customer implements Datatype {
 		attributes.put("Salary", null);
 	}
 	
-	public Customer(int ID, String name, int age, int countryCode, int salary) {
+	public Customer(int ID, String name, int age, int countryCode, double salary) {
 		attributes.put("ID", Integer.toString(ID));
 		attributes.put("Name", name);
 		attributes.put("Age", Integer.toString(age));
 		attributes.put("CountryCode", Integer.toString(countryCode));
-		attributes.put("Salary", Integer.toString(salary));
+		attributes.put("Salary", Double.toString(salary));
 	}
 	
 	public String getPrimaryKey() {
@@ -69,6 +79,7 @@ public class Customer implements Datatype {
 	public String getRandomValueFor(String key) {
 		Random rand;
 		Integer adjusted;
+		Double adjusted_double;
 		if (key.equals("ID")) {
 			rand = new Random();
 			adjusted = rand.nextInt(50000) + 1;
@@ -85,8 +96,8 @@ public class Customer implements Datatype {
 			return adjusted.toString();
 		} else if (key.equals("Salary")) {
 			rand = new Random();
-			adjusted = rand.nextInt(10000) + 100;
-			return adjusted.toString();
+			adjusted_double = (10000.0 - 100.0)*rand.nextDouble() + 100.0;
+			return String.valueOf(Math.round(adjusted_double * 100.0) / 100.0); // Round to hundredths place (cents)
 		} else {
 			return null;
 		}

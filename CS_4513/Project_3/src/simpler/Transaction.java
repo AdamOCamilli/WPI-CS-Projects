@@ -4,10 +4,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
+/**
+ * A <code>Datatype</code> with the following attributes: <p>
+ * 	TransID:[1,5000000]:Int -------------->Primary Key<br>
+ * 	CustID: [1,50000]:String -------------->Foreign Key<br>
+ * 	TransValue: [10,10000]:Float <br>
+ *  TransNumItems: [1,10]:Int <br>
+ *  TransDesc: [20,50]:String <br>
+ * @author Adam Camilli (aocamilli@wpi.edu)
+ *
+ */
 public class Transaction implements Datatype {
 	
 	private HashMap<String,String> attributes = new HashMap<String,String>();
 	
+	/**
+	 * Don't initialize <code>Transaction</code> without an associated <code>Customer</code>
+	 */
+	@SuppressWarnings("unused")
 	private Transaction() {}
 	
 	public Transaction(Customer custID) {
@@ -18,10 +32,10 @@ public class Transaction implements Datatype {
 		attributes.put("TransDesc", null);
 	}
 	
-	public Transaction(int transID, Customer custID, int transValue, int transItems, String transDesc) {
+	public Transaction(int transID, Customer custID, double transValue, int transItems, String transDesc) {
 		attributes.put("TransID", Integer.toString(transID));
 		attributes.put("CustID", custID.getValue(custID.getPrimaryKey()));
-		attributes.put("TransValue", Integer.toString(transValue));
+		attributes.put("TransValue", Double.toString(transValue));
 		attributes.put("TransNumItems", Integer.toString(transItems));
 		attributes.put("TransDesc", transDesc);
 	}
@@ -73,6 +87,7 @@ public class Transaction implements Datatype {
 	public String getRandomValueFor(String key) {
 		Random rand;
 		Integer adjusted;
+		Double adjusted_double;
 		if (key.equals("TransID")) {
 			rand = new Random();
 			adjusted = rand.nextInt(5000000) + 1;
@@ -81,8 +96,8 @@ public class Transaction implements Datatype {
 			return this.attributes.get(key);
 		} else if (key.equals("TransValue")) { 
 			rand = new Random();
-			adjusted = rand.nextInt(10000) + 10;
-			return adjusted.toString();
+			adjusted_double = (10000.0 - 10.0)*rand.nextDouble() + 10.0;
+			return String.valueOf(Math.round(adjusted_double * 100.0) / 100.0); // Round to hundredths place (cents)
 		} else if (key.equals("TransNumItems")) {
 			rand = new Random();
 			adjusted = rand.nextInt(10) + 1;
