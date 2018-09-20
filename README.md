@@ -19,3 +19,7 @@
 
   I also have experience in `MatLab` through Math and Electrical Engineering courses.
   
+  I also have recently created several small websites through my Webware (CS 4241) class:
+	   [A simple web page with dynamic content]https://a1-adamocamilli.herokuapp.com/
+	   [A simple two-tier web application]https://a2-incentive-planner.herokuapp.com/
+   
