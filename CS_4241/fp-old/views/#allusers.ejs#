@@ -1,0 +1,10 @@
+<ul class="timeline">
+    <% for (var i = 0; i < users.length; i++) { %>
+	<li class="timeline-yellow">
+            <div class="timeline-time">
+		<span class="users" style="text-align:left">
+		    <%= users[i].username %>: <%= users[i].firstname %> <%= users[i].lastname </span>
+									</div>
+									</li>
+									<% } %>
+</ul>

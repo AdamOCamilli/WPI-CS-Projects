@@ -1,0 +1,16 @@
+// Update with your config settings.
+
+module.exports = {
+
+  development: {
+      client: 'pg',
+      debug: true,
+      connection: 'postgres://ngnoohgrdfodss:f263b8ead0c88bbc835e53fc746b958c19d6cb866a45d64b4c666100dc26a63f@ec2-54-235-90-0.compute-1.amazonaws.com:5432/ddbta9nq6dfpth',
+      migrations: {
+	  tableName: 'migrations'
+      },
+      ssl: true
+  }
+    
+
+};

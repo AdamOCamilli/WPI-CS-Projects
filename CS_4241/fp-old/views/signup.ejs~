@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	<title>Find a user</title>
+	<link rel="stylesheet" href="/stylesheets/style.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    </head>
+
+    <body class="container">
+	<ul class="list-group">
+	<% users.forEach(function (users) { %>
+	    <li class="list-group-item">  
+		<%= users.firstname %> <%= users.lastname %> a.k.a. <%= users.username %> 
+	    </li>                                   
+	<% }) %>
+	</ul>
+    </body>
+</html>

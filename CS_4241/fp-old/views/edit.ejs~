@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	<title>Edit account</title>
+	<link rel="stylesheet" href="/stylesheets/style.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    </head>
+
+    <body class="container">
+	<form class="form" action="/users" method="post">
+	    <div class="form-group">
+		<label for="title">Sign Up</label>
+	    </div>
+	    <div class="form-group">
+		<label for="username"></label>
+		<input name="username" autocomplete="off" type="text" class="form-control" placeholder="Enter Username" id="username" data-toggle="tooltip" data-placement="right" title="Be creative! Being cooldude14312 is not very cool!"required>
+	    </div>
+	    <div class="form-group">
+		<label for="password"></label>
+		<input name="password" autocomplete="off" type="password" class="form-control" placeholder="Enter Password" id="password" data-toggle="tooltip" data-placement="right" title="Should be at least 20 characters with both cases, numbers and symbols" required>
+	    </div>
+	    <div class="form-group">
+		<label for="firstname"></label>
+		<input name="firstname" autocomplete="off" type="text" class="form-control" placeholder="Enter First Name" id="firstname" data-toggle="tooltip" data-placement="right" title="Feel free to be humorous if you don't want everybody seeing your name..."required>
+	    </div>
+	    <div class="form-group">
+		<label for="lastname"></label>
+		<input name="lastname" autocomplete="off" type="text" class="form-control" placeholder="Enter Last Name" id="lastname" data-toggle="tooltip" data-placement="right" title="Feel free to be humorous if you don't want everybody seeing your name..."required>
+	    </div>
+	    <div class="form-group">
+		<label for="email"></label>
+		<input name="email" autocomplete="off" type="text" class="form-control" placeholder="Enter Email" id="email" data-toggle="tooltip" data-placement="right" title="No spam here."required>
+	    </div>
+	    <button type="submit" class="btn btn-default btn-success">Create</button>
+	</form>
+    </body>
+
+    <script>
+     $(function () {
+	 $('[data-toggle="tooltip"]').tooltip()
+     })
+    </script>
+</html>
