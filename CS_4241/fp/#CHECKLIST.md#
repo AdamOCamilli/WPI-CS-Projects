@@ -1,6 +1,0 @@
-# Incentive Planner Build #
-
-
-## Startup ##
-- [x] Create Heroku app `fp-incentive-planner`
-- [ ] Generate default express app, push to Heroku
