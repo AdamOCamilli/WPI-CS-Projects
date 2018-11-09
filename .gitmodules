@@ -1,0 +1,9 @@
+[submodule "CS_4241/a1-adamocamilli"]
+	path = CS_4241/a1-adamocamilli
+	url = https://git.heroku.com/a1-adamocamilli.git
+[submodule "CS_4241/a2-incentive-planner"]
+	path = CS_4241/a2-incentive-planner
+	url = https://git.heroku.com/a2-incentive-planner.git
+[submodule "CS_4241/a3-aocamilli"]
+	path = CS_4241/a3-aocamilli
+	url = https://git.heroku.com/a3-aocamilli.git
