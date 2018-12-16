@@ -1,0 +1,308 @@
+\documentclass[12pt]{article}
+
+% Popup for cipher
+\usepackage{pdfcomment}
+% Draw Caesar cipher / LFSR
+\usepackage{tikz}
+\usetikzlibrary{matrix,positioning,calc,fit}
+\tikzset{circ/.style={draw,circle,node distance=2mm,inner sep=0.1pt},topath/.style={to path={|-(\tikztotarget)}}}
+
+\usepackage{ifthen}
+% Be able to get substrings
+\usepackage{xstring}
+
+% Caesar cipher drawing
+\newcounter{index}
+%command to increase a counter by 1 modulo 26
+\newcommand{\increase}[1]{\ifthenelse{\arabic{#1}<26}{\addtocounter{#1}{1}}{\setcounter{#1}{1}}}
+\newcommand{\pOneCipher}{CBDGFAIELKHJMSNQOPURVTYWXZ}
+\newcommand{\pOneKey}{ETANORSICLHDUPMGWFVYKBXJQZ}
+
+% Standard
+\usepackage[top=0.8in,bottom=0.8in]{geometry}
+\usepackage{amsmath,bm}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{tcolorbox}
+\usepackage{array,multirow}
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+% Enables font change size in verbatim blocks
+\makeatletter
+\newcommand{\verbatimfont}[1]{\renewcommand{\verbatim@font}{\ttfamily#1}}
+\makeatother
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+ 
+\urlstyle{same}
+
+
+% Format for answering questions
+\newenvironment{answer}
+{ \begin{tcolorbox}[halign=left]
+    }
+    {  
+  \end{tcolorbox}
+}
+
+% Math table column
+\newcolumntype{L}{>{$}l<{$}} % math-mode version of "l" column type
+
+\begin{document}
+
+\title{CS 4801: Assignment 3}
+\author{Adam Camilli (aocamilli@wpi.edu)}
+\date{\today}
+\maketitle
+
+\begin{enumerate}
+\item \textbf{Computing RSA by hand.} Let $p = 43; q = 37; b = 23$ be your initial parameters.
+  You may use a calculator for this problem, but you should show all intermediate
+  results.
+  \begin{enumerate}
+  \item \textbf{Key generation}: Compute $N$ and $\phi(N)$. Compute the private key 
+    $$k_{\text{priv}} = a = b^{-1} \bmod \phi(N)$$ using the extended Euclidean algorithm. Show all intermediate results.
+    \begin{answer}
+      \begin{enumerate}[label=\arabic{*}.]
+      \item Choose two prime numbers $p,q$:
+        \begin{align*}
+          &p = 43, q= 37 & \text{ (given)}\\
+        \end{align*}
+      \item Compute $N$:
+        \[ N = p\cdot q = 43 \cdot 37 = 1591 \]
+      \item Compute $\phi(N)$:
+        \[ \phi(N) = (p-1)(q-1) = 42 \cdot 36 = 1512\]
+      \item Choose random $b \mid 0 < b < \phi(N)$ with  $\texttt{gcd}(b,\phi(N)) = 1$:
+        \begin{align*}
+          &b = 23 & \text{ (given)}\\
+        \end{align*}
+      \item Compute $a$:
+        \[ a = b^{-1} \bmod \phi(N) = 23^{-1} \bmod 1512 \]
+        \centering(Next Page)
+      \end{enumerate}
+    \end{answer}
+    \newpage
+      \begin{answer}
+        \begin{align*}
+          &s_0: \text{  }1512 = \bm{65}(23) + 17 &p_0 &= 0 \text{ (given)}\\
+          &s_1: \text{  }23 = \bm{1}(17) + 6 &p_1 &= 1 \text{ (given)}\\
+          &s_2: \text{  }17 = \bm{2}(6) + 5 &p_2 &= p_0 - p_1(q_0) \bmod 1512 \\ 
+          & & &= 0 - 1(65) \bmod 1512 = 1447 \\
+          &s_3: \text{  }6 = \bm{1}(5) + 1 &p_3 &= p_1 - p_2(q_1) \bmod 1512 \\ 
+          & & &= 1 - 1447(1) \bmod 1512 = 66 \\
+          &s_4: \text{  }5 = \bm{1}(5) + 0 &p_4 &= p_2 - p_3(q_2) \bmod 1512 \\
+          & & &= 1447 - 66(2) \bmod 1512 = 1315 \\
+          & &p_5 &= p_3 - p_4(q_3) \bmod 1512 \\
+          & & &= 66 - 1315(1) \bmod 1512 = \bm{263} \\
+        \end{align*}
+        \[ k_{\text{priv}} = 263 \]
+
+    \end{answer}
+    \newpage
+  \item \textbf{Encryption}: Encrypt the message $X = 91$ by applying the square and multiply algorithm (first, transform the exponent to binary representation).  Show all intermediate results.  
+    \begin{answer}
+      The encrypted message is calculated
+      \begin{align*}
+      Y = \texttt{Enc}(X) &= X^b \bmod N \\
+                          &= 91^{23} \bmod 1591 \\
+      \end{align*}
+      Convert exponent $b$ to binary:
+      \[ 23_{10} = 2^4 + 2^3 - 1 = 11000_{2} - 1 = 10111_{2}  \]
+      Now execute square and multiply for $91^{23} \bmod 1591$:
+      \\
+      \begin{tabular}{| L | L | L|}
+        \hline
+        \text{b} & \text{Algorithm step} & \text{mod reduction} \\
+        \hline
+        1 & 91 & 91 \bmod 1591 = \textbf{91}\\
+        \hline
+        0 & (91)^2 &(91)^2 \bmod 1591 = \textbf{326} \\
+        \hline
+        1 & ((91)^2)^2\cdot 91 & (326)^2 \cdot 91 \bmod 1591 = \textbf{1018} \\
+        \hline
+        1 & (((91)^2)^2\cdot 91)^2 \cdot 91 & (1018)^2 \cdot 91 \bmod 1591 = \textbf{550} \\
+        \hline
+        1 & ((((91)^2)^2\cdot 91)^2 \cdot 91)^2 \cdot 91 & (550)^2 \cdot 91\bmod 1591 = \textbf{18} \\
+        \hline
+      \end{tabular}
+      \[ \texttt{Enc}(X) = 18 \]
+    \end{answer}
+    \newpage
+  \item \textbf{Decryption}: Decrypt the ciphertext $Y$ computed above by applying the square and multiply algorithm. Show all intermediate results.
+        \begin{answer}
+      The decrypted message is calculated
+      \begin{align*}
+      X = \texttt{Dec}(Y) &= X^{k_{priv}} \bmod N \\
+                          &= 18^{263} \bmod 1591 \\
+      \end{align*}
+      Convert exponent $b$ to binary:
+      \[ 263_{10} = 2^8 + 2^3 - 1 = 1 0000 0000_{2} + 1000_{2} - 1 = 1 0000 0111_{2}  \]
+      Now execute square and multiply for $18^{263} \bmod 1591$:
+      \\
+      \begin{tabular}{| L | L | L|}
+        \hline
+        \text{b} & \text{Algorithm step} & \text{mod reduction} \\
+        \hline
+        1 & 18 & 18 \bmod 1591 = \textbf{18}\\
+        \hline
+        0 & (18)^2 & (18)^2 \bmod 1591 = \textbf{324} \\
+        \hline
+        0 & ((18)^2)^2 & (324)^2 \bmod 1591 = \textbf{1561}\\
+        \hline
+        0 & (((18)^2)^2)^2 & (1561)^2 \bmod 1591 = \textbf{900} \\
+        \hline
+        0 & ((((18)^2)^2)^2)^2 & (900)^2 \bmod 1591 = \textbf{181} \\
+        \hline
+        0 & (((((18)^2)^2)^2)^2)^2 & (181)^2 \bmod 1591 = \textbf{941} \\
+        \hline
+        1 & ((18)^{16})^2 \cdot 18 & (941)^2 \cdot 18 \bmod 1591 = \textbf{20} \\
+        \hline
+        1 & ((18)^{32})^2 \cdot 18 & (20)^2 \cdot 18 \bmod 1591 = \textbf{836} \\
+        \hline
+        1 & ((18)^{64})^2 \cdot 18 & (836)^2 \cdot 18 \bmod 1591 = \textbf{91} \\
+        \hline
+      \end{tabular}
+      \[ \texttt{Dec}(Y) = X = 91 \]
+    \end{answer}
+  \end{enumerate}
+
+\newpage
+
+\item Eve records the transmission of an RSA-encrypted message in Question 1. Eve also knows the public key to be $k_{pub} = (N, b)$. Your goal is to recover the message $X$ that has been encrypted with RSA in Question 1 Part b.
+  \begin{enumerate}
+  \item Give the equation for the decryption of $Y$. Which variables
+    are not known to Eve? Can Eve recover $X$? If so, how? If not, why?
+    \begin{answer}
+      \[ \texttt{Dec}(Y) = Y^{k_{priv}} \bmod N \]
+      In this equation, the encrypted message $Y$ is given to Eve, and $N$ is available as part of $k_{pub}$. $k_{priv}$ is unknown to Eve. Eve cannot easily decrypt $Y$ without deriving $k_{priv}$ however, since she cannot perform the calculation.
+    \end{answer}
+  \item To recover the private key $a$, Eve has to compute $a = b - 1 \bmod
+    \phi(N)$. Can Eve recover $\phi(N)$?  
+    \begin{answer}
+      Yes. Eve knows that in RSA $k_{priv}$ is generated using $N$, which is a product of two primes $p$ and $q$. $k_{priv}$ is calculated using the value $\phi(N)$ which is equivalent to $(p-1)(q-1)$. In order to find this value she must factorize $N$. The computational difficulty of factoring large $N$ is the foundation of RSA's security, since if this is done the rest of the calculation of $k_{priv}$ is comparatively trivial.
+    \end{answer}
+    \newpage
+  \item Compute the message $X$.  (Hint: Start
+    by factoring $N = p \cdot q$. Then use $\phi(N)$ to compute b) 
+    \begin{answer}
+      \[ \sqrt{\left|N\right|} \approx 39.89 \]
+      Therefore it is sufficient to check $N$'s divisibility with primes less than or equal to 39:
+      \[ \text{primes } = \{2,3,5,7,11,13,17,19,23,29,31,37\}\]
+      \begin{center}
+      \begin{tabular}{| L | L | L|}
+        \hline
+        \frac{1591}{2} & \varnothing \\
+        \frac{1591}{3} & \varnothing \\
+        \frac{1591}{5} & \varnothing \\
+        \frac{1591}{7} & \varnothing \\
+        \frac{1591}{11} & \varnothing \\
+        \frac{1591}{13} & \varnothing \\
+        \frac{1591}{17} & \varnothing \\
+        \frac{1591}{23} & \varnothing \\
+        \frac{1591}{29} & \varnothing \\
+        \frac{1591}{31} & \varnothing \\
+        \frac{1591}{33} & \varnothing \\
+        \frac{1591}{37} & 43 \\
+        \hline
+        \end{tabular}
+      \end{center}
+
+        We now know $N = p\cdot q = 37 \cdot 43$. $\phi(N)$ is therefore $(p-1)(q-1) = 36\cdot 42 = 1512$.\\
+        Since we are given public key exponent $b = 23$, we can now calculate $a$ and decrypt $Y$ as in problem 1:  
+        \[ a = 23^{-1} \bmod 1512 = 263\]
+        \[ \texttt{Dec}(Y=18) = X = 91 \]
+
+    \end{answer}
+  \item Can Eve do the same message recovery attack (as in (c)) for large $N$, e.g., $\left|N\right| = 1024$ bit?  
+    \begin{answer}
+      Technically yes, however presently (2018) the factorization of $N$ would take several millenia to accomplish using the fastest algorithm (general number field sieve) on supercomputers. Eve therefore would likely not be able to use this attack.
+    \end{answer}
+  \item Eve recovers a message-ciphertext pair $(X, Y)$. Can
+    she recover the private key $a$?
+    \begin{answer}
+      Even if no random padding is performed (as would be recommended in real life) Eve can still not feasibly compute $a$ with $(X,Y)$. Were this case, RSA would not be a correct public-key encryption algorithm, since any user can calculate an arbitrary $(X,Y)$ using a public key. Detecting $a$ this way would be equivalent to guessing, since Eve's only option is to try and reproduce $Y$ by encrypting $X$ using different possible values of $a$.
+      
+    \end{answer}
+  \end{enumerate}
+\newpage
+
+  \item Find the following using Extended Euclidean Algorithm
+    \begin{enumerate}
+    \item Find $17^{-1} \bmod 37$ using Extended Euclidean
+      Algorithm
+      \begin{answer}
+        During each step $s_i$, recursively calculate
+        \[p_i = p_{i-2} - p_{i-1}q_{i-2} \bmod n \] $q_i$ is equal to
+        the coefficient on the left side (bolded). Repeat until
+        remainder is 0 and iterate right side ($p$ calcuation) one
+        more time.
+        \[\texttt{gcd(}17,37\texttt{)} = 1 \]
+        \[ \therefore \text{$\exists$ integers
+            $(p,n) \mid 17p = 37n + 1$} \]
+        \begin{align*}
+          &s_0: \text{  }37 = \bm{2}(17) + 3 &p_0 &= 0 \text{ (given)}\\
+          &s_1: \text{  }17 = \bm{5}(3) + 2 &p_1 &= 1 \text{ (given)}\\
+          &s_2: \text{  }3 = \bm{1}(2) + 1 &p_2 &= p_0 - p_1(q_0) \bmod 37 \\ 
+          & & &= 0 - 1(2) \bmod 37 = 35 \\
+          &s_3: \text{  }2 = \bm{2}(1) + 0 &p_3 &= p_1 - p_2(q_1) \bmod 37 \\
+          & & &= 1 - 35(5) \bmod 37 = 11 \\
+          & &p_4 &= p_2 - p_3(q_2) \bmod 37 \\
+          & & &= 35 - 11(1) \bmod 37 = \bm{24}
+        \end{align*}
+        Modular inverse is \textbf{24}
+      \end{answer}
+
+    \item Find $13^{-1} \bmod 91$
+      \begin{answer}
+         \[\texttt{gcd(}13,91\texttt{)} = 13 \]
+        \[ \therefore \text{$\nexists$ integers
+            $(p,n) \mid 13p = 91n + 1$} \]
+        \textbf{13 not invertible modulo 91}
+      \end{answer}
+
+      \newpage
+
+    \item Find $13^{-1} \bmod 448$
+      \begin{answer}
+         \[\texttt{gcd(}13,448\texttt{)} = 1 \]
+        \[ \therefore \text{$\exists$ integers
+            $(p,n) \mid 13p = 448n + 1$} \]
+        \begin{align*}
+          &s_0: \text{  }448 = \bm{34}(13) + 4 &p_0 &= 0 \text{ (given)}\\
+          &s_1: \text{  }13 = \bm{2}(6) + 1 &p_1 &= 1 \text{ (given)}\\
+          &s_2: \text{  }6 = \bm{6}(1) + 0 &p_2 &= p_0 - p_1(q_0) \bmod 448 \\ 
+          & & &= 0 - 1(34) \bmod 448 = 414 \\
+          & &p_3 &= p_1 - p_2(q_1) \bmod 448 \\
+          & & &= 1 - 414(2) \bmod 448 = \bm{69}
+        \end{align*}
+        Modular inverse is \textbf{69}
+      \end{answer}
+
+    \item Find $16^{-1} \bmod 4725$
+      \begin{answer}
+         \[\texttt{gcd(}16,4725\texttt{)} = 1 \]
+        \[ \therefore \text{$\exists$ integers
+            $(p,n) \mid 16p = 4725n + 1$} \]
+        \begin{align*}
+          &s_0: \text{  }4725 = \bm{295}(16) + 5 &p_0 &= 0 \text{ (given)}\\
+          &s_1: \text{  }16 = \bm{3}(5) + 1 &p_1 &= 1 \text{ (given)}\\
+          &s_2: \text{  }5 = \bm{5}(1) + 0 &p_2 &= p_0 - p_1(q_0) \bmod 4725 \\ 
+          & & &= 0 - 1(295) \bmod 4725 = 4430 \\
+          & &p_3 &= p_1 - p_2(q_1) \bmod 4725 \\
+          & & &= 1 - 4430(3) \bmod 4725 = \bm{886}
+        \end{align*}
+        Modular inverse is \textbf{886}
+      \end{answer}
+
+    \end{enumerate}
+  \end{enumerate}
+
+
+\end{document}

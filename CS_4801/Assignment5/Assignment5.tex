@@ -1,0 +1,264 @@
+\documentclass[12pt]{article}
+
+% Popup for cipher
+\usepackage{pdfcomment}
+% Draw Caesar cipher / LFSR
+\usepackage{tikz}
+\usetikzlibrary{matrix,positioning,calc,fit}
+\tikzset{circ/.style={draw,circle,node distance=2mm,inner sep=0.1pt},topath/.style={to path={|-(\tikztotarget)}}}
+
+\usepackage{ifthen}
+% Be able to get substrings
+\usepackage{xstring}
+
+% Caesar cipher drawing
+\newcounter{index}
+%command to increase a counter by 1 modulo 26
+\newcommand{\increase}[1]{\ifthenelse{\arabic{#1}<26}{\addtocounter{#1}{1}}{\setcounter{#1}{1}}}
+\newcommand{\pOneCipher}{CBDGFAIELKHJMSNQOPURVTYWXZ}
+\newcommand{\pOneKey}{ETANORSICLHDUPMGWFVYKBXJQZ}
+
+% Standard
+\usepackage[top=0.8in,bottom=0.8in]{geometry}
+\usepackage{amsmath,bm}
+\usepackage{amssymb}
+\usepackage{physics}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{tcolorbox}
+\usepackage{array,multirow}
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+% Enables font change size in verbatim blocks
+\makeatletter
+\newcommand{\verbatimfont}[1]{\renewcommand{\verbatim@font}{\ttfamily#1}}
+\makeatother
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+ 
+\urlstyle{same}
+
+
+% Format for answering questions
+\newenvironment{answer}
+{ \begin{tcolorbox}[halign=left]
+    }
+    {  
+  \end{tcolorbox}
+}
+
+% Math table column
+\newcolumntype{L}{>{$}l<{$}} % math-mode version of "l" column type
+
+\begin{document}
+
+\title{CS 4801: Assignment 5}
+\author{Adam Camilli (aocamilli@wpi.edu)}
+\date{\today}
+\maketitle
+
+\begin{enumerate}
+  
+\item \textbf{ElGamal Encryption:} Encrypt and decrypt the following messages using ElGamal Encryption for $\mathbb{Z}^*_{971}$ and $g = 314$ (generator  $r = 8$ and $\alpha = 10$, $q = 97$) and show every intermediate step:
+  \begin{enumerate}
+  \item Find the public key for private key $x = 23$. 
+    \begin{answer}
+      \begin{align*}
+        \beta &= g^x \bmod p = 314^{23} \bmod 971 = 865 \\
+        & \\
+        k_{pub} &= \big( p, g, \beta \big) = \big( 971, 314, 865 \big) \\
+      \end{align*}
+    \end{answer}
+  \item Encrypt the message $m = 49$ with random parameter $k = 29$.  
+    \begin{answer}
+      \[ e_{k_{pub}}(x,k) = \big(Y_1,Y_2\big) \]
+      \begin{align*}        
+        Y_1 &= g^k \bmod p = 314^{29} \bmod 971 = 364 \\
+        Y_2 &= m \cdot \beta^k \bmod p = 49 \cdot 865^{29} \bmod 971 = 448 \\
+        & \\
+        \big(Y_1, Y_2\big) &= (\bm{364,448}) \\
+      \end{align*}
+    \end{answer}
+  \item Decrypt the ciphertext from part b. 
+    \begin{answer}
+      \begin{align*}
+        m &= d_{k_{priv}}\big(Y_1,Y_2\big) \\
+          &= Y_2\big(Y^x_1\big)^{-1} \bmod p \\
+          &= 448 \cdot 364^{-23} \bmod 971 \\        
+          &= 448 \cdot (364^{-1})^{23} \bmod 971 \\
+      \end{align*}
+      \begin{center}
+        (next page)
+      \end{center}
+    \end{answer}
+    \newpage
+    \begin{answer}
+      \begin{align*}
+        &s_0: \text{  }971 = \bm{2}(364) + 243 &p_0 &= 0 \text{ (given)}\\
+        &s_1: \text{  }364 = \bm{1}(243) + 121 &p_1 &= 1 \text{ (given)}\\
+        &s_2: \text{  }243 = \bm{2}(121) + 1 &p_2 &= p_0 - p_1(q_0) \bmod 971 \\ 
+        & & &= 0 - 1(2) \bmod 971 = 969 \\
+        &s_3: \text{  }121 = \bm{121}(1) + 0 &p_3 &= p_1 - p_2(q_1) \bmod 971 \\
+        & & &= 1 - 969(1) \bmod 971 = 3 \\
+        & &p_4 &= p_2 - p_3(q_2) \bmod 971 \\
+        & & &= 969 - 3(2) \bmod 971 = \bm{963}
+      \end{align*}
+      \[ m = 448 \cdot (963)^{23} \bmod 971 = 49\]
+    \end{answer}
+  \item Encrypt the message $m = 49$ with random parameter $k = 135$ 
+    \begin{answer}
+      \[ e_{k_{pub}}(x,k) = \big(Y_1,Y_2\big) \]
+      \begin{align*}        
+        Y_1 &= g^k \bmod p = 314^{135} \bmod 971 = 730 \\
+        Y_2 &= m \cdot \beta^k \bmod p = 49 \cdot 865^{135} \bmod 971 = 821 \\
+        & \\
+        \big(Y_1, Y_2\big) &= (\bm{720,821}) \\
+      \end{align*}
+    \end{answer}
+  \item Decrypt the ciphertext from part d.  
+    \begin{answer}
+      \begin{align*}
+        m &= d_{k_{priv}}\big(Y_1,Y_2\big) \\
+          &= Y_2\big(Y^x_1\big)^{-1} \bmod p \\
+          &= 821 \cdot 730^{-23} \bmod 971 \\        
+          &= 821 \cdot (730^{-1})^{23} \bmod 971 \\
+      \end{align*}
+      \begin{align*}
+        &s_0: \text{  }971 = \bm{1}(730) + 241 &p_0 &= 0 \text{ (given)}\\
+        &s_1: \text{  }730 = \bm{3}(241) + 7 &p_1 &= 1 \text{ (given)}\\
+        &s_2: \text{  }241 = \bm{34}(7) + 3 &p_2 &= p_0 - p_1(q_0) \bmod 971 \\ 
+        & & &= 0 - 1(1) \bmod 971 = 970 \\
+      \end{align*}
+      \begin{center}
+        (next page)
+      \end{center}
+    \end{answer}
+    \begin{answer}
+      \begin{align*}
+        &s_3: \text{  }7 = \bm{2}(3) + 1 &p_3 &= p_1 - p_2(q_1) \bmod 971 \\
+        & & &= 1 - 970(3) \bmod 971 = 4 \\
+        &s_4: \text{  }3 = \bm{3}(1) + 0 &p_4 &= p_2 - p_3(q_2) \bmod 971 \\
+        & & &= 970 - 4(34) \bmod 971 = 834 \\
+        & &p_5 &= p_3 - p_4(q_3) \bmod 971 \\
+        & & &= 4 - 834(2) \bmod 971 = \bm{278} \\
+      \end{align*}
+      \[ m = 821 \cdot (278)^{23} \bmod 971 = 49\]
+    \end{answer}
+  \item In part b. and d, the same message is encrypted under the same private key with different ephemeral keys. Explain why the related ciphertexts are different and how they give the same message $m$ after decryption.
+    \begin{answer}
+      A shortcoming of the base algorithm is that if an attacker finds the ephemeral key $k$, they can recover $m$:
+      \[ m = Y_1 \cdot \beta^{-k} \bmod p\]
+      $k$ must therefore be random each time (and realistically $p$ must be on the order of 1024 bits).
+      \\~\\
+      The ciphertexts are of course different since they are calculated with different $k$, but they give the same message $m$ after decryption since the secret key is the same for both (and is the only thing other ciphertexts used for decryption). This works because the public key was generated from the secret key and is only manipulated by $k$ as an exponent in the ciphertext calculations:
+      \begin{align*}
+        Y_1 &= g^k \bmod p \\
+        Y_2 &= m \cdot \beta^k \bmod p \\
+      \end{align*}
+      which means the decryptions are mathemcatically equivalent $\bmod p$ regardless of the value of $k$.      
+
+    \end{answer}
+  \end{enumerate}
+
+\newpage  
+
+\item \textbf{ElGamal Signature:} Sign and verify the message $m = 71$ using Elgamal Signature
+  Scheme for $\mathbb{Z}^*_{971}$, generator $\alpha = 8$ and private key $x = 23$. Show every intermediate step:
+  \begin{enumerate}
+  \item Find the public key.
+    \begin{answer}
+      \begin{align*}
+        \beta &= \alpha^x \bmod p = 8^{23} \bmod 971 \\
+              &= 804 \\
+              & \\
+        k_{pub} &= \big(p, \alpha, \beta\big) = \big(971, 8, 804\big) \\
+      \end{align*}
+    \end{answer}
+  \item Sign the given message $(m = 71)$ using the ephemeral key $k = 53$.
+    \begin{answer}
+      \begin{align*}
+        sig_{k_{priv}} &= (\gamma, \delta) \\
+                     &\\
+        \gamma &= \alpha^k \bmod p = 8^{53} \bmod 971 = \bm{813} \\
+        \delta &= (m - k_{priv} \cdot \gamma) \cdot k^{-1} \bmod p - 1 \\
+                     &= (71 - 23\cdot 813) \cdot 53^{-1}) \bmod 970 \\
+                       &\ldots \\
+      \end{align*}
+      \begin{align*}
+        &s_0: \text{  }970 = \bm{18}(53) + 16 &p_0 &= 0 \text{ (given)}\\
+        &s_1: \text{  }53 = \bm{3}(16) + 5 &p_1 &= 1 \text{ (given)}\\
+        &s_2: \text{  }16 = \bm{3}(5) + 1 &p_2 &= p_0 - p_1(q_0) \bmod 970 \\ 
+        & & &= 0 - 1(18) \bmod 970 = 952 \\
+        &s_3: \text{  }5 = \bm{5}(1) + 0 &p_3 &= p_1 - p_2(q_2) \bmod 970 \\ 
+        & & &= 1 - 952(3) \bmod 970 = 55 \\
+        & &p_4 &= p_2 - p_3(q_3) \bmod 970 \\ 
+        & & &= 952 - 55(3) \bmod 970 = \bm{787} \\
+      \end{align*}
+      \begin{align*}
+        \ldots & \\
+        \delta &= (71 - 23\cdot 813) \cdot 787 \bmod 970 \\
+               &= \bm{344}
+      \end{align*}
+    \end{answer}
+    \newpage
+  \item Verify the signature computed in part b.
+    \begin{answer}
+      \begin{align*}
+        ver_{k_{pub}} &= \beta^{\gamma} \cdot \gamma^{\delta} \equiv \alpha^{m} \bmod p \text{ if valid} \\
+                     &= 804^{813} \cdot 813^{344} \bmod 971 \equiv 8^{71} \bmod 971 = \bm{919} \\
+      \end{align*}
+    \end{answer}
+  \end{enumerate}
+\newpage
+\item \textbf{RSA Signature} Let $p = 43$, $q = 37$, public key $b = 23$ be your initial parameters.
+  You may use a calculator for this problem, but you should show all intermediate results.
+  \begin{enumerate}
+  \item Key generation: Compute $N$ and $\phi(N)$. Compute the private key $k_{priv} = a = b^{-1} \bmod \phi(N)$. Show all intermediate results.
+    \begin{answer}
+      \begin{align*}
+        N &= pq = 43\cdot37 = 1591 \\
+        \phi(N) &= (p-1)(q-1) = 42\cdot36 = 1512 \\
+        a &= b^{-1} \bmod \phi(N) = 23^{-1} \bmod 1512 \\
+      \end{align*}
+      \begin{align*}
+          &s_0: \text{  }1512 = \bm{65}(23) + 17 &p_0 &= 0 \text{ (given)}\\
+          &s_1: \text{  }23 = \bm{1}(17) + 6 &p_1 &= 1 \text{ (given)}\\
+          &s_2: \text{  }17 = \bm{2}(6) + 5 &p_2 &= p_0 - p_1(q_0) \bmod 1512 \\ 
+          & & &= 0 - 1(65) \bmod 1512 = 1447 \\
+          &s_3: \text{  }6 = \bm{1}(5) + 1 &p_3 &= p_1 - p_2(q_1) \bmod 1512 \\ 
+          & & &= 1 - 1447(1) \bmod 1512 = 66 \\
+          &s_4: \text{  }5 = \bm{1}(5) + 0 &p_4 &= p_2 - p_3(q_2) \bmod 1512 \\
+          & & &= 1447 - 66(2) \bmod 1512 = 1315 \\
+          & &p_5 &= p_3 - p_4(q_3) \bmod 1512 \\
+          & & &= 66 - 1315(1) \bmod 1512 = \bm{263} \\
+        \end{align*}
+        \[ k_{\text{priv}} = \bm{263} \]
+    \end{answer}
+  \item Signing: Sign the message $X = 91$.  
+    \begin{answer}
+      \begin{align*}
+        sig_{k_{priv}}(x) &= x^a \bmod n \\
+                           &=  91^{263} \bmod 1591 \\ 
+                           &= \bm{550}
+      \end{align*}
+    \end{answer}
+  \item Verification: Verify the signature $Sign(X)$ computed in part b.
+    \begin{answer}
+      \begin{align*}
+        ver_{k_{pub}}(x,y) &= y^b \bmod N = x  \text{ if valid} \\
+                           &= 550^{23} \bmod 1591 = \bm{91} \\ 
+      \end{align*}
+    \end{answer}
+  \end{enumerate}
+
+\end{enumerate}  
+
+
+\end{document}

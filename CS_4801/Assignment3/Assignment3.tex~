@@ -1,0 +1,135 @@
+\documentclass[12pt]{article}
+
+% Popup for cipher
+\usepackage{pdfcomment}
+% Draw Caesar cipher / LFSR
+\usepackage{tikz}
+\usetikzlibrary{matrix,positioning,calc,fit}
+\tikzset{circ/.style={draw,circle,node distance=2mm,inner sep=0.1pt},topath/.style={to path={|-(\tikztotarget)}}}
+
+\usepackage{ifthen}
+% Be able to get substrings
+\usepackage{xstring}
+
+% Caesar cipher drawing
+\newcounter{index}
+%command to increase a counter by 1 modulo 26
+\newcommand{\increase}[1]{\ifthenelse{\arabic{#1}<26}{\addtocounter{#1}{1}}{\setcounter{#1}{1}}}
+\newcommand{\pOneCipher}{CBDGFAIELKHJMSNQOPURVTYWXZ}
+\newcommand{\pOneKey}{ETANORSICLHDUPMGWFVYKBXJQZ}
+
+% Standard
+\usepackage[top=0.8in,bottom=0.8in]{geometry}
+\usepackage{amsmath,bm}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{tcolorbox}
+\usepackage{array,multirow}
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+% Enables font change size in verbatim blocks
+\makeatletter
+\newcommand{\verbatimfont}[1]{\renewcommand{\verbatim@font}{\ttfamily#1}}
+\makeatother
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+ 
+\urlstyle{same}
+
+
+% Format for answering questions
+\newenvironment{answer}
+{ \begin{tcolorbox}[halign=left]
+    }
+    {  
+  \end{tcolorbox}
+}
+
+\begin{document}
+
+\title{CS 4801: Assignment 2}
+\author{Adam Camilli (aocamilli@wpi.edu)}
+\date{\today}
+\maketitle
+
+\begin{enumerate}
+  \item Find the following using Extended Euclidean Algorithm
+    \begin{enumerate}
+    \item Find $17^{-1} \bmod 37$ using Extended Euclidean
+      Algorithm
+      \begin{answer}
+        During each step $s_i$, recursively calculate
+        \[p_i = p_{i-2} - p_{i-1}q_{i-2} \bmod n \] $q_i$ is equal to
+        the coefficient on the left side (bolded). Repeat until
+        remainder is 0 and iterate right side ($p$ calcuation) one
+        more time.
+        \[\texttt{gcd(}17,37\texttt{)} = 1 \]
+        \[ \therefore \text{$\exists$ integers
+            $(p,n) \mid 17p = 37n + 1$} \]
+        \begin{align*}
+          &s_0: \text{  }37 = \bm{2}(17) + 3 &p_0 &= 0 \text{ (given)}\\
+          &s_1: \text{  }17 = \bm{5}(3) + 2 &p_1 &= 1 \text{ (given)}\\
+          &s_2: \text{  }3 = \bm{1}(2) + 1 &p_2 &= p_0 - p_1(q_0) \bmod 37 \\ 
+          & & &= 0 - 1(2) \bmod 37 = 35 \\
+          &s_3: \text{  }2 = \bm{2}(1) + 0 &p_3 &= p_1 - p_2(q_1) \bmod 37 \\
+          & & &= 1 - 35(5) \bmod 37 = 11 \\
+          & &p_4 &= p_2 - p_3(q_2) \bmod 37 \\
+          & & &= 35 - 11(1) \bmod 37 = \bm{24}
+        \end{align*}
+        Modular inverse is \textbf{24}
+      \end{answer}
+
+    \item Find $13^{-1} \bmod 91$
+      \begin{answer}
+         \[\texttt{gcd(}13,91\texttt{)} = 13 \]
+        \[ \therefore \text{$\nexists$ integers
+            $(p,n) \mid 13p = 91n + 1$} \]
+        \textbf{13 not invertible modulo 91}
+      \end{answer}
+
+      \newpage
+
+    \item Find $13^{-1} \bmod 448$
+      \begin{answer}
+         \[\texttt{gcd(}13,448\texttt{)} = 1 \]
+        \[ \therefore \text{$\exists$ integers
+            $(p,n) \mid 13p = 448n + 1$} \]
+        \begin{align*}
+          &s_0: \text{  }448 = \bm{34}(13) + 4 &p_0 &= 0 \text{ (given)}\\
+          &s_1: \text{  }13 = \bm{2}(6) + 1 &p_1 &= 1 \text{ (given)}\\
+          &s_2: \text{  }6 = \bm{6}(1) + 0 &p_2 &= p_0 - p_1(q_0) \bmod 448 \\ 
+          & & &= 0 - 1(34) \bmod 448 = 414 \\
+          & &p_3 &= p_1 - p_2(q_1) \bmod 448 \\
+          & & &= 1 - 414(2) \bmod 448 = \bm{69}
+        \end{align*}
+        Modular inverse is \textbf{69}
+      \end{answer}
+
+    \item Find $16^{-1} \bmod 4725$
+      \begin{answer}
+         \[\texttt{gcd(}16,4725\texttt{)} = 1 \]
+        \[ \therefore \text{$\exists$ integers
+            $(p,n) \mid 16p = 4725n + 1$} \]
+        \begin{align*}
+          &s_0: \text{  }4725 = \bm{295}(16) + 5 &p_0 &= 0 \text{ (given)}\\
+          &s_1: \text{  }16 = \bm{3}(5) + 1 &p_1 &= 1 \text{ (given)}\\
+          &s_2: \text{  }5 = \bm{5}(1) + 0 &p_2 &= p_0 - p_1(q_0) \bmod 4725 \\ 
+          & & &= 0 - 1(295) \bmod 4725 = 4430 \\
+          & &p_3 &= p_1 - p_2(q_1) \bmod 4725 \\
+          & & &= 1 - 4430(3) \bmod 4725 = \bm{886}
+        \end{align*}
+        Modular inverse is \textbf{886}
+      \end{answer}
+
+    \end{enumerate}
+  \end{enumerate}
+
+
+\end{document}
